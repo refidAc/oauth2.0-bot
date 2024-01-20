@@ -74,7 +74,7 @@ def demo():
 
 @app.route("/oauth/callback", methods=["GET"])
 def callback():
-    code = request.args.get("code")
+    code = requests.request.args.get("code")
     token = twitter.fetch_token(
         token_url=token_url,
         client_secret=client_secret,
