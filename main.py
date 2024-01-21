@@ -108,8 +108,7 @@ def refresh_token():
         'grant_type': 'refresh_token',
         'refresh_token': f'{data["refresh_token"]}'
     }
-    #headers = base64.urlsafe_b64encode(str(headers).encode()).decode()
-    params = urlencode(params)
+    #params = urlencode(params)
 
     logging.info(f"req params: {params}")
 
