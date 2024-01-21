@@ -9,7 +9,8 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-# j_token_str = r.get("token")
+# j_token_str = r.get("save_token")
+# print(f"stred tok :: {str(j_token_str)}")
 # j_token = json.loads(j_token_str.decode('utf-8'))
 # print(j_token)
 
@@ -67,7 +68,6 @@ def demo():
     session["oauth_state"] = state
     return redirect(authorization_url)
 
-
 @app.route("/oauth/callback", methods=["GET"])
 def callback():
     code = request.args.get("code")
@@ -77,18 +77,33 @@ def callback():
         code_verifier=code_verifier,
         code=code,
     )
-    save_token = token
-    save_token = json.dumps(save_token)
-    r.set("save_token", save_token)
     st_token = '"{}"'.format(token)
-    #st_token = json.dumps(token)
-    #print(st_token)
     j_token = json.loads(st_token)
     r.set("token", j_token)
     doggie_fact = parse_dog_fact()
     payload = {"text": "{}".format(doggie_fact)}
     response = post_tweet(payload, token).json()
     return response
+
+# @app.route("/oauth/callback", methods=["GET"])
+# def callback():
+#     code = request.args.get("code")
+#     token = twitter.fetch_token(
+#         token_url=token_url,
+#         client_secret=client_secret,
+#         code_verifier=code_verifier,
+#         code=code,
+#     )
+#     save_token = token
+#     save_token = json.dumps(save_token)
+#     r.set("save_token", save_token)
+#     st_token = '"{}"'.format(token)
+#     j_token = json.loads(st_token)
+#     r.set("token", j_token)
+#     doggie_fact = parse_dog_fact()
+#     payload = {"text": "{}".format(doggie_fact)}
+#     response = post_tweet(payload, token).json()
+#     return response
 
 
 if __name__ == "__main__":
