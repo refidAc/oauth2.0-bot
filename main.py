@@ -10,7 +10,7 @@ from flask import Flask, redirect, session, request
 from datetime import datetime
 
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-r.delete('token')
+#r.delete('token')
 app = Flask(__name__)
 app.secret_key = os.urandom(50)
 client_id = os.environ.get("CLIENT_ID")
@@ -45,7 +45,6 @@ def refresh_token():
     # Get the refresh token from Redis
     t = r.get("token")
     data = json.loads(t)
-
     # Use the refresh token to get a new access token
     refreshed_token = twitter.refresh_token(
         client_id=client_id,
@@ -53,18 +52,15 @@ def refresh_token():
         token_url=token_url,
         refresh_token=data["refresh_token"],
     )
-
     # Save the new access token to Redis
     st_refreshed_token = json.dumps(refreshed_token)
     r.set("token", st_refreshed_token)
 
-
-
 def logPrint(name=None, text=None):
     if name is not None:
-        print(f'{name} :: {text}')
+        print(f'{name} :: {text}', flush=True)
     else:
-        print(f'{text}')
+        print(f'{text}', flush=True)
 
 # Retrieve the token from Redis
 def loadAuthToken():
@@ -110,6 +106,7 @@ def demo():
     try:
         token = loadAuthToken()
         doggie_fact = parse_dog_fact()
+        print(f'doggie_fact:{doggie_fact}')
         payload = {"text": "{}".format(doggie_fact)}
         response = post_tweet(payload, token).json()
         return response
@@ -153,7 +150,7 @@ def callback():
         code_verifier=code_verifier,
         code=code,
     )
-    logPrint(name, f"")
+    logPrint(name, f"token I hope: {token}")
     st_token = json.dumps(token)
     r.set("token", st_token)
     doggie_fact = parse_dog_fact()
