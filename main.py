@@ -32,7 +32,8 @@ def run_opensea_stream_client():
     logging.info("Starting opensea client loop...")
     opensea_api_key=os.environ.get("OPENSEA_KEY")
     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
-    count = 0
+    global count
+    count=0
     r = redis.from_url(os.environ["REDIS_URL_DOGS"])
     # def handle_item_sold(payload: dict):
     #     logging.info(f"Event Handled ::::{payload}")
@@ -43,7 +44,7 @@ def run_opensea_stream_client():
     def handle_item_sold(payload: dict):
         logging.info(f"Event Handled ::::{payload}")
         if count==0:
-            r.set("single_message_test",json.dumps(payload))
+            payload = json.loads(r.get("single_message_test"))
             print(f"Event Handled ::::{payload}")
             # Fetch the access token from Redis
             t = r.get("token")
