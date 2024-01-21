@@ -9,6 +9,7 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 import logging
 from urllib.parse import urlencode
+from opensea_sdk import *
 
 
 logging.basicConfig(level=logging.INFO)
@@ -178,6 +179,23 @@ def callback():
     payload = {"text": "{}".format(doggie_fact)}
     response = post_tweet(payload, token).json()
     return response
+
+def reauth():
+    code = request.args.get("code")
+    token = twitter.fetch_token(
+        token_url=token_url,
+        client_secret=client_secret,
+        code_verifier=code_verifier,
+        code=code,
+    )
+    raw_t = token
+    r.set("raw_token",json.dumps(raw_t))
+    st_token = '"{}"'.format(token)
+    j_token = json.loads(st_token)
+    r.set("token", j_token)
+    return token
+
+
 
 # @app.route("/oauth/callback", methods=["GET"])
 # def callback():
