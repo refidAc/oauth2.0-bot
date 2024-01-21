@@ -94,7 +94,7 @@ def refresh_token():
     # Define the parameters
     params = {
         'grant_type': 'refresh_token',
-        'refresh_token': refresh_token
+        'refresh_token': data['refresh_token']
     }
 
     # Send the POST request
