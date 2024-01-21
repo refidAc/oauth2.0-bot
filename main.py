@@ -82,7 +82,8 @@ def refresh_token():
     
     
     # Encode the client id and secret
-    credentials = f'{client_id}:{client_secret}'
+    credentials = f"{client_id}:{client_secret}"
+    logging.info(f"credentials :: {credentials}")
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
 
     # Define the headers
