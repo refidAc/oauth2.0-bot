@@ -32,11 +32,35 @@ def run_opensea_stream_client():
     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
     count = 0
     r = redis.from_url(os.environ["REDIS_URL_DOGS"])
+    # def handle_item_sold(payload: dict):
+    #     logging.info(f"Event Handled ::::{payload}")
+    #     if count==0:
+    #         r.set("single_message_test",json.dumps(payload))
+    #         count=count+1
+    #     print(f"Event Handled ::::{payload}")
     def handle_item_sold(payload: dict):
         logging.info(f"Event Handled ::::{payload}")
         if count==0:
             r.set("single_message_test",json.dumps(payload))
-        print(f"Event Handled ::::{payload}")
+            print(f"Event Handled ::::{payload}")
+            # Fetch the access token from Redis
+            t = r.get("token")
+            bb_t = t.decode("utf8").replace("'", '"')
+            data = json.loads(bb_t)
+            # Extract the image URL and price from the payload
+            #payload.item.metadata.image_url
+            image_url = payload['payload']['item']['metadata']['image_url']
+            price = payload['payload']['base_price']
+            price = convert_to_ether(price)
+            # Prepare the tweet text
+            tweet_text = f"Test! Price: {price} WETH\n![Image]({image_url})"
+            # Prepare the payload for the tweet
+            payload = {"status": tweet_text}
+            # Post the tweet
+            response = post_tweet(payload, data).json()
+            count=count+1
+        print(response)
+        
     def convert_to_ether(amt):
         #bid_wei = int("19416600000000000000")
         bid_wei = int(amt)
