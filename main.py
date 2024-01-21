@@ -56,7 +56,9 @@ def logPrint(name=None, text=None):
 # Retrieve the token from Redis
 def loadAuthToken():
     j_token_str = r.get("token")
-    j_token = json.loads(j_token_str.decode())
+    if j_token_str is None:
+        raise Exception("Token not found in Redis")
+    j_token = json.loads(j_token_str.decode('utf-8'))
     return j_token
 
 def make_token():
