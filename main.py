@@ -86,7 +86,7 @@ def refresh_token():
         st_refreshed_token = '"{}"'.format(refreshed_token)
         j_refreshed_token = json.loads(st_refreshed_token)
         r.set("token", j_refreshed_token)
-        return json.dumps({"PreviousToken":t,"Token Refreshed?":j_refreshed_token})
+        return json.dumps({"PreviousToken":str(t),"Token Refreshed?":str(j_refreshed_token)})
 
 
 @app.route("/")
