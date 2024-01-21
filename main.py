@@ -109,7 +109,8 @@ def refresh_token():
         'refresh_token': f'{data["refresh_token"]}'
     }
     #params = urlencode(params)
-
+    # Convert the parameters to a JSON string
+    params = json.dumps(params)
     logging.info(f"req params: {params}")
 
     # Send the POST request
