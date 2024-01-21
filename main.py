@@ -81,7 +81,7 @@ def refresh_token():
     refreshed_token = response.json()
     print("we refreshed something!")
     if(refreshed_token['error'] or refreshed_token['error']!=None):
-        return json.dumps({"Error occured": str(refresh_token)})
+        return json.dumps({"Error occured": str(refreshed_token)})
     else:
         st_refreshed_token = '"{}"'.format(refreshed_token)
         j_refreshed_token = json.loads(st_refreshed_token)
