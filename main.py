@@ -125,7 +125,7 @@ def callback():
     r.set("token", j_token)
     doggie_fact = parse_dog_fact()
     payload = {"text": "{}".format(doggie_fact)}
-    response = post_tweet(payload, token).json()
+    response = post_tweet(payload).json()
     return response
 
 
