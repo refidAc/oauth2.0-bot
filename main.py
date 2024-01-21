@@ -30,8 +30,12 @@ for key in r.scan_iter("prefix:*"):
 def run_opensea_stream_client():
     opensea_api_key=os.environ.get("OPENSEA_KEY")
     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
+    count = 0
+    r = redis.from_url(os.environ["REDIS_URL_DOGS"])
     def handle_item_sold(payload: dict):
         logging.info(f"Event Handled ::::{payload}")
+        if count==0:
+            r.set("single_message_test",json.dumps(payload))
         print(f"Event Handled ::::{payload}")
     def convert_to_ether(amt):
         #bid_wei = int("19416600000000000000")
