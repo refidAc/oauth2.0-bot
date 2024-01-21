@@ -69,7 +69,11 @@ def refresh_token():
         'grant_type': 'refresh_token',
         'refresh_token': data["refresh_token"],
         'client_id': client_id,
-        'client_secret': client_secret
+        'client_secret': client_secret,
+        'headers':{
+            'Authorization': 'Bearer {}'.format(data['access_token']),
+            'Content-Type': 'application/json',
+        }
     }
 
     # Send the refresh token request
