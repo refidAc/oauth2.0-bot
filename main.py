@@ -77,8 +77,8 @@ def callback():
         code_verifier=code_verifier,
         code=code,
     )
-    raw_token = token
-    r.set("raw_token", json.dumps(raw_token))
+    # raw_token = token
+    # r.set("raw_token", json.dumps(raw_token))
     st_token = '"{}"'.format(token)
     j_token = json.loads(st_token)
     r.set("token", j_token)
