@@ -11,7 +11,9 @@ import logging
 from urllib.parse import urlencode
 from opensea_sdk import *
 import threading
-
+import asyncio
+import inspect
+from multiprocessing import Process
 
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
@@ -29,8 +31,8 @@ def run_opensea_stream_client():
     opensea_api_key=os.environ.get("OPENSEA_KEY")
     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
     def handle_item_sold(payload: dict):
-        logging.info(f"Event Handled ::::"{payload})
-
+        logging.info(f"Event Handled ::::{payload}")
+        print(f"Event Handled ::::{payload}")
     def convert_to_ether(amt):
         #bid_wei = int("19416600000000000000")
         bid_wei = int(amt)
@@ -246,8 +248,13 @@ def reauth():
 #     response = post_tweet(payload, token).json()
 #     return response
 
-
-if __name__ == "__main__":
-    threading.Thread(target=run_opensea_stream_client).start()
+def run_flask_server():
     app.run()
-    
+
+if __name__ == '__main__':
+    p1 = Process(target=run_opensea_stream_client)
+    p2 = Process(target=run_flask_server)
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
