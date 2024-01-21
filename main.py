@@ -77,9 +77,12 @@ def callback():
         code_verifier=code_verifier,
         code=code,
     )
-    #st_token = '"{}"'.format(token)
-    st_token = json.dumps(token)
-    print(st_token)
+    save_token = token
+    save_token = json.dumps(save_token)
+    r.set("save_token", save_token)
+    st_token = '"{}"'.format(token)
+    #st_token = json.dumps(token)
+    #print(st_token)
     j_token = json.loads(st_token)
     r.set("token", j_token)
     doggie_fact = parse_dog_fact()
