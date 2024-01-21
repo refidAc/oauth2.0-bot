@@ -68,7 +68,12 @@ def refresh_token():
         client_id=client_id,
         client_secret=client_secret,
         token_url=token_url,
-        refresh_token=data["refresh_token"])
+        refresh_token=data["refresh_token"],
+        headers={
+            "Authorization": "Bearer {}".format(data["access_token"]),
+            "Content-Type": "application/json",
+        }
+    )
     st_refreshed_token = '"{}"'.format(refreshed_token)
     j_refreshed_token = json.loads(st_refreshed_token)
     r.set("token", j_refreshed_token)
