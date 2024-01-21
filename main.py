@@ -8,12 +8,9 @@ import redis
 from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 
-
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-
 app = Flask(__name__)
 app.secret_key = os.urandom(50)
-
 
 client_id = os.environ.get("CLIENT_ID")
 client_secret = os.environ.get("CLIENT_SECRET")
@@ -21,10 +18,8 @@ auth_url = "https://twitter.com/i/oauth2/authorize"
 token_url = "https://api.twitter.com/2/oauth2/token"
 redirect_uri = os.environ.get("REDIRECT_URI")
 
-
 # Set the scopes
-scopes = ["tweet.read", "users.read", "tweet.write", "offline.access"]
-
+scopes = ["tweet.read","offline.access"]
 
 # Create a code verifier
 code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
@@ -34,8 +29,6 @@ code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
 code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
 code_challenge = code_challenge.replace("=", "")
-
-
 
 def make_token():
     return OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scopes)
@@ -50,6 +43,7 @@ def parse_dog_fact():
 
 def post_tweet(payload, token):
     print("Tweeting!")
+    print("token" : token)
     return requests.request(
         "POST",
         "https://api.twitter.com/2/tweets",
@@ -59,7 +53,6 @@ def post_tweet(payload, token):
             "Content-Type": "application/json",
         },
     )
-
 
 @app.route("/")
 def demo():
