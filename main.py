@@ -100,7 +100,8 @@ def refresh_token():
     # Define the headers
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': f'Basic {encoded_credentials}'
+        'Authorization': f'Basic {encoded_credentials}',
+        'grant_type': 'refresh_token'
     }
     logging.info(f"req headers: {headers}")
     # Define the parameters
