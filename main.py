@@ -58,7 +58,7 @@ def post_tweet(payload, token):
         },
     )
 
-@app.route("/testrefresh")
+@app.route("/testrefresh", methods=["GET"])
 def refresh_token():
     print("Refreshing!")
     t = r.get("token")
@@ -72,6 +72,7 @@ def refresh_token():
     st_refreshed_token = '"{}"'.format(refreshed_token)
     j_refreshed_token = json.loads(st_refreshed_token)
     r.set("token", j_refreshed_token)
+    return json.dumps({"Token Refreshed?":j_refreshed_token})
 
 
 @app.route("/")
