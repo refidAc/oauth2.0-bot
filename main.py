@@ -85,18 +85,20 @@ def refresh_token():
     credentials = f"{client_id}:{client_secret}"
     logging.info(f"credentials :: {credentials}")
     encoded_credentials = base64.b64encode(credentials.encode()).decode()
-
+    logging.info(f"encoded creds : {encoded_credentials}")
     # Define the headers
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': f'Basic {encoded_credentials}'
     }
-    logging.info(f"refresh_token: {data['refresh_token']}")
+    logging.info(f"req headers: {headers}")
     # Define the parameters
     params = {
         'grant_type': 'refresh_token',
         'refresh_token': f'{data["refresh_token"]}'
     }
+    
+    logging.info(f"req params: {params}")
 
     # Send the POST request
     response = requests.post('https://api.twitter.com/2/oauth2/token', headers=headers, data=params)
