@@ -43,8 +43,6 @@ def parse_dog_fact():
 
 def post_tweet(payload, token):
     print("Tweeting!")
-    
-    print(token["access_token"])
     return requests.request(
         "POST",
         "https://api.twitter.com/2/tweets",
