@@ -9,6 +9,8 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
+for key in r.scan_iter("prefix:*"):
+    r.delete(key)
 # j_token_str = r.get("save_token")
 # print(f"stred tok :: {str(j_token_str)}")
 # j_token = json.loads(j_token_str.decode('utf-8'))
