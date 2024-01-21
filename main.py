@@ -14,6 +14,7 @@ import threading
 import asyncio
 import inspect
 from multiprocessing import Process
+import time
 
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
@@ -43,25 +44,25 @@ def run_opensea_stream_client():
     #     print(f"Event Handled ::::{payload}")
     def handle_item_sold(payload: dict):
         logging.info(f"Event Handled ::::{payload}")
-        if count==0:
-            payload = json.loads(r.get("single_message_test"))
-            print(f"Event Handled ::::{payload}")
-            # Fetch the access token from Redis
-            t = r.get("token")
-            bb_t = t.decode("utf8").replace("'", '"')
-            data = json.loads(bb_t)
-            # Extract the image URL and price from the payload
-            #payload.item.metadata.image_url
-            image_url = payload['payload']['item']['metadata']['image_url']
-            price = payload['payload']['base_price']
-            price = convert_to_ether(price)
-            # Prepare the tweet text
-            tweet_text = f"Test! Price: {price} WETH\n![Image]({image_url})"
-            # Prepare the payload for the tweet
-            payload = {"status": tweet_text}
-            # Post the tweet
-            response = post_tweet(payload, data).json()
-            count=count+1
+        payload = json.loads(r.get("single_message_test"))
+        print(f"Event Handled ::::{payload}")
+        # Fetch the access token from Redis
+        t = r.get("token")
+        bb_t = t.decode("utf8").replace("'", '"')
+        data = json.loads(bb_t)
+        # Extract the image URL and price from the payload
+        #payload.item.metadata.image_url
+        image_url = payload['payload']['item']['metadata']['image_url']
+        price = payload['payload']['base_price']
+        price = convert_to_ether(price)
+        # Prepare the tweet text
+        tweet_text = f"Test! Price: {price} WETH\n![Image]({image_url})"
+        # Prepare the payload for the tweet
+        payload = {"status": tweet_text}
+        # Post the tweet
+        response = post_tweet(payload, data).json()
+        time.sleep(300)
+        count=count+1
         print(response)
     
     def post_tweet(payload, token):
