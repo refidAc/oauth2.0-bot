@@ -109,7 +109,7 @@ def refresh_token():
         'grant_type': 'refresh_token',
         'refresh_token': f'{data["refresh_token"]}'
     }
-    params = json.dumps(params)
+    params = 'grant_type=refresh_token&refresh_token=' + f'{data["refresh_token"]}'
     params = urlencode(params)
     # Convert the parameters to a JSON string
     
