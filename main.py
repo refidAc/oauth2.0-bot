@@ -109,8 +109,8 @@ def refresh_token():
         'grant_type': 'refresh_token',
         'refresh_token': f'{data["refresh_token"]}'
     }
-    params = 'grant_type=refresh_token&refresh_token=' + f'{data["refresh_token"]}'
-    #params = urlencode(params)
+    #params = 'grant_type=refresh_token&refresh_token=' + f'{data["refresh_token"]}'
+    params = urlencode(params)
     # Convert the parameters to a JSON string
     
     logging.info(f"req params: {params}")
