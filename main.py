@@ -28,6 +28,8 @@ for key in r.scan_iter("prefix:*"):
 
 #####OPENSEA CONFIG############
 def run_opensea_stream_client():
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Starting opensea client loop...")
     opensea_api_key=os.environ.get("OPENSEA_KEY")
     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
     count = 0
