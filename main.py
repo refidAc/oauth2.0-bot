@@ -46,8 +46,6 @@ def parse_dog_fact():
     dog_fact = requests.request("GET", url).json()
     return dog_fact["facts"][0]
 
-
-
 def post_tweet(payload, token):
     print("Tweeting!")
     return requests.request(
@@ -59,6 +57,22 @@ def post_tweet(payload, token):
             "Content-Type": "application/json",
         },
     )
+
+@app.route("/testrefresh")
+def refresh_token():
+    print("Refreshing!")
+    t = r.get("token")
+    bb_t = t.decode("utf8").replace("'", '"')
+    data = json.loads(bb_t)
+    refreshed_token = twitter.refresh_token(
+        client_id=client_id,
+        client_secret=client_secret,
+        token_url=token_url,
+        refresh_token=data["refresh_token"])
+    st_refreshed_token = '"{}"'.format(refreshed_token)
+    j_refreshed_token = json.loads(st_refreshed_token)
+    r.set("token", j_refreshed_token)
+
 
 @app.route("/")
 def demo():
@@ -79,6 +93,8 @@ def callback():
         code_verifier=code_verifier,
         code=code,
     )
+    raw_t = token
+    r.set("raw_token",json.dumps(raw_t))
     st_token = '"{}"'.format(token)
     j_token = json.loads(st_token)
     r.set("token", j_token)
