@@ -70,14 +70,13 @@ def refresh_token():
         'refresh_token': data["refresh_token"],
         'client_id': client_id,
         'client_secret': client_secret,
-        'headers':{
-            'Authorization': 'Bearer {}'.format(data['access_token']),
-            'Content-Type': 'application/json',
-        }
     }
-
+    headers = {
+        'Authorization': 'Bearer {}'.format(data['access_token']),
+        'Content-Type': 'application/json',
+    }
     # Send the refresh token request
-    response = requests.post(token_url, params=params)
+    response = requests.post(token_url, params=params, headers=headers)
     refreshed_token = response.json()
     print("we refreshed something!")
     if(refreshed_token['error'] or refreshed_token['error']!=None):
