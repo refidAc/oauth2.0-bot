@@ -94,7 +94,7 @@ def refresh_token():
     # Encode the client id and secret
     credentials = f"{client_id}:{client_secret}"
     logging.info(f"credentials :: {credentials}")
-    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+    encoded_credentials = base64.urlsafe_b64encode(credentials.encode()).decode()
     logging.info(f"encoded creds : {encoded_credentials}")
     # Define the headers
     headers = {
@@ -107,7 +107,9 @@ def refresh_token():
         'grant_type': 'refresh_token',
         'refresh_token': f'{data["refresh_token"]}'
     }
-    
+    headers = base64.urlsafe_b64encode(str(headers).encode()).decode()
+    params = base64.urlsafe_b64encode(str(params).encode()).decode()
+
     logging.info(f"req params: {params}")
 
     # Send the POST request
