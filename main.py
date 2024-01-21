@@ -10,6 +10,7 @@ from flask import Flask, redirect, session, request
 import logging
 from urllib.parse import urlencode
 from opensea_sdk import *
+import threading
 
 
 logging.basicConfig(level=logging.INFO)
@@ -22,9 +23,32 @@ for key in r.scan_iter("prefix:*"):
 # j_token = json.loads(j_token_str.decode('utf-8'))
 # print(j_token)
 
+
+#####OPENSEA CONFIG############
+def run_opensea_stream_client():
+    opensea_api_key=os.environ.get("OPENSEA_KEY")
+    collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
+    def handle_item_sold(payload: dict):
+        logging.info("Event Handled ::::", payload)
+
+    def convert_to_ether(amt):
+        #bid_wei = int("19416600000000000000")
+        bid_wei = int(amt)
+        bid_ether = bid_wei / (10 ** 18)
+        logging.info(bid_ether)
+        return bid_ether
+
+    Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
+    Client.onEvents(
+        collection_slug,
+        [EventTypes.ITEM_RECEIVED_OFFER, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_CANCELLED, EventTypes.ITEM_LISTED, EventTypes.ITEM_METADATA_UPDATED, EventTypes.ITEM_RECEIVED_BID, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_SOLD],
+        handle_item_sold
+        )
+    Client.startListening()
+###############################
+
 app = Flask(__name__)
 app.secret_key = os.urandom(50)
-
 client_id = os.environ.get("CLIENT_ID")
 client_secret = os.environ.get("CLIENT_SECRET")
 auth_url = "https://twitter.com/i/oauth2/authorize"
@@ -43,6 +67,11 @@ code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
 code_challenge = code_challenge.replace("=", "")
 
+
+def run_stream_client():
+    stream_client = OpenSeaStreamClient()
+    stream_client.run()
+    
 def make_token():
     return OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scopes)
 
@@ -219,5 +248,6 @@ def reauth():
 
 
 if __name__ == "__main__":
+    threading.Thread(target=run_opensea_stream_client).start()
     app.run()
     
