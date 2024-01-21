@@ -15,6 +15,8 @@ import asyncio
 import inspect
 from multiprocessing import Process
 import time
+import oauth
+import jsonify
 
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
@@ -55,38 +57,49 @@ def run_opensea_stream_client():
         price = payload['payload']['base_price']
         price = convert_to_ether(price)
         # Download the image
-        print(image_url)
-        response = requests.get(image_url)
-        image_data = response.content
-        print("11111")
-        # Upload the image to Twitter
-        upload_response = requests.post(
-            "https://upload.twitter.com/1.1/media/upload.json",
-            params={"command": "INIT"},
-            headers={"Authorization": "Bearer {}".format(data["access_token"])},
-        )
-        print(upload_response.json())
-        media_id = upload_response.json()["media_id_string"]
-        print("22222")
-        upload_response = requests.post(
-            "https://upload.twitter.com/1.1/media/upload.json",
-            params={"command": "APPEND", "media_id": media_id, "segment_index": 0},
-            headers={"Authorization": "Bearer {}".format(data["access_token"])},
-            data=image_data,
-        )
-        print("333333")
-        upload_response = requests.post(
-            "https://upload.twitter.com/1.1/media/upload.json",
-            params={"command": "FINALIZE", "media_id": media_id},
-            headers={"Authorization": "Bearer {}".format(data["access_token"])},
-        )
-        print("444444")
-        # Prepare the tweet text
+        # print(image_url)
+        # response = requests.get(image_url)
+        # image_data = response.content
+        # print("11111")
+        # # Upload the image to Twitter
+        # # Initialize the upload
+        # init_response = requests.post(
+        #     "https://upload.twitter.com/1.1/media/upload.json",
+        #     params={
+        #         "command": "INIT",
+        #         "total_bytes": len(image_data),
+        #         "media_type": "image/jpeg"
+        #     },
+        #     headers={"Authorization": "Bearer {}".format(data["access_token"])},
+        # )
+        # print("22222")
+        # print(init_response.headers)
+        # print(init_response.status_code)
+        # print(init_response.raw)
+
+        # media_id = init_response.json()
+        
+        # media_id = upload_response.json()["media_id_string"]
+        # print("22222")
+        # upload_response = requests.post(
+        #     "https://upload.twitter.com/1.1/media/upload.json",
+        #     params={"command": "APPEND", "media_id": media_id, "segment_index": 0},
+        #     headers={"Authorization": "Bearer {}".format(data["access_token"])},
+        #     data=image_data,
+        # )
+        # print("333333")
+        # upload_response = requests.post(
+        #     "https://upload.twitter.com/1.1/media/upload.json",
+        #     params={"command": "FINALIZE", "media_id": media_id},
+        #     headers={"Authorization": "Bearer {}".format(data["access_token"])},
+        # )
+        # print("444444")
+        # # Prepare the tweet text
         tweet_text = f"Test! Price: {price} WETH"
 
         # Prepare the payload for the tweet
-        payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
-
+        #payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
+        payload = {"text": tweet_text}
         # Post the tweet
         response = post_tweet(payload, data).json()
         print(response)
@@ -119,7 +132,15 @@ def run_opensea_stream_client():
         handle_item_sold
         )
     Client.startListening()
-###############################
+#########################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(50)
@@ -140,6 +161,12 @@ code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
 code_challenge = code_challenge.replace("=", "")
 
+@app.route('/wakeup', methods=['GET'])
+def wakeup():
+    return jsonify({"i'm": "awake"})
+
+def oauthOneConnectFor():
+    methodName = "oauthOneConnectFor"
 
 def run_stream_client():
     stream_client = OpenSeaStreamClient()
@@ -147,7 +174,6 @@ def run_stream_client():
     
 def make_token():
     return OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scopes)
-
 
 def parse_dog_fact():
     url = "http://dog-api.kinduff.com/api/facts"
@@ -277,10 +303,10 @@ def callback():
     st_token = '"{}"'.format(token)
     j_token = json.loads(st_token)
     r.set("token", j_token)
-    doggie_fact = parse_dog_fact()
-    payload = {"text": "{}".format(doggie_fact)}
-    response = post_tweet(payload, token).json()
-    return response
+    # doggie_fact = parse_dog_fact()
+    # payload = {"text": "{}".format(doggie_fact)}
+    response = {"Success": "Authed!"}
+    return jsonify(response)
 
 def reauth():
     code = request.args.get("code")
