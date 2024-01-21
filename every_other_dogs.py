@@ -15,7 +15,7 @@ token_url = "https://api.twitter.com/2/oauth2/token"
 
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
 
-t = r.get("single_message_test")
+t = r.get("token")
 print(t)
 bb_t = t.decode("utf8").replace("'", '"')
 data = json.loads(bb_t)
