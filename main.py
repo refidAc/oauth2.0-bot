@@ -6,7 +6,7 @@ import json
 import requests
 import redis
 from requests_oauthlib import OAuth2Session
-from flask import Flask, redirect, session
+from flask import Flask, redirect, session, request
 
 
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
