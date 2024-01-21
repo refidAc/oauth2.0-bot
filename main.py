@@ -77,7 +77,17 @@ def refresh_token():
     }
     # Send the refresh token request
     response = requests.post(token_url, params=params, headers=headers)
-    refreshed_token = response.json()
+    # Check if the response is not empty and is in JSON format
+    if response.status_code == 200:
+        try:
+            refreshed_token = response.json()
+        except ValueError:
+            print("Invalid JSON received: ", response.text)
+            return {"Error": response.text}
+    else:
+        print("Unexpected response from server: ", response.text)
+        return {"Error": response.text}
+    #refreshed_token = response.json()
     print("we refreshed something!")
     if(refreshed_token['error'] or refreshed_token['error']!=None):
         return json.dumps({"Error occured": str(refreshed_token)})
