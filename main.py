@@ -63,13 +63,25 @@ def run_opensea_stream_client():
             response = post_tweet(payload, data).json()
             count=count+1
         print(response)
-        
+    
+    def post_tweet(payload, token):
+        print("Tweeting!")
+        return requests.request(
+            "POST",
+            "https://api.twitter.com/2/tweets",
+            json=payload,
+            headers={
+                "Authorization": "Bearer {}".format(token["access_token"]),
+                "Content-Type": "application/json",
+            },
+        )
     def convert_to_ether(amt):
         #bid_wei = int("19416600000000000000")
         bid_wei = int(amt)
         bid_ether = bid_wei / (10 ** 18)
         logging.info(bid_ether)
         return bid_ether
+    
     print("Started opensea")
     Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
     Client.onEvents(
