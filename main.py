@@ -7,7 +7,10 @@ import requests
 import redis
 from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logging.info("Starting Bot...")
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
 for key in r.scan_iter("prefix:*"):
     r.delete(key)
@@ -77,6 +80,13 @@ def refresh_token():
     }
     # Send the refresh token request
     response = requests.post(token_url, params=params, headers=headers)
+    print("Status code: ", response.status_code)
+    print("Headers: ", response.headers)
+    print("Body: ", response.text)
+    logging.info(response.status_code)
+    logging.info(response.headers)
+    logging.info(response.text)
+
     # Check if the response is not empty and is in JSON format
     if response.status_code == 200:
         try:
