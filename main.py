@@ -64,20 +64,22 @@ def refresh_token():
     t = r.get("token")
     bb_t = t.decode("utf8").replace("'", '"')
     data = json.loads(bb_t)
-    refreshed_token = twitter.refresh_token(
-        client_id=client_id,
-        client_secret=client_secret,
-        token_url=token_url,
-        refresh_token=data["refresh_token"],
-        headers={
-            "Authorization": "Bearer {}".format(data["access_token"]),
-            "Content-Type": "application/json",
-        }
-    )
+    # Prepare the refresh token request parameters
+    params = {
+        'grant_type': 'refresh_token',
+        'refresh_token': data["refresh_token"],
+        'client_id': client_id,
+        'client_secret': client_secret
+    }
+
+    # Send the refresh token request
+    response = requests.post(token_url, params=params)
+    refreshed_token = response.json()
+    print("we refreshed something!")
     st_refreshed_token = '"{}"'.format(refreshed_token)
     j_refreshed_token = json.loads(st_refreshed_token)
     r.set("token", j_refreshed_token)
-    return json.dumps({"PreviousToken":t,"Token Refreshed?":j_refreshed_token})
+    return ({"PreviousToken":t,"Token Refreshed?":j_refreshed_token}).json()
 
 
 @app.route("/")
