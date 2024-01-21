@@ -26,7 +26,7 @@ token_url = "https://api.twitter.com/2/oauth2/token"
 redirect_uri = os.environ.get("REDIRECT_URI")
 
 # Set the scopes
-scopes = ["tweet.read","offline.access"]
+scopes = ["tweet.write","offline.access"]
 
 # Create a code verifier
 code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
