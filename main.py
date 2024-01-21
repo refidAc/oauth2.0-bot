@@ -9,6 +9,7 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 import logging
 
+
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
@@ -67,17 +68,40 @@ def refresh_token():
     t = r.get("token")
     bb_t = t.decode("utf8").replace("'", '"')
     data = json.loads(bb_t)
-    # Prepare the refresh token request parameters
+    # # Prepare the refresh token request parameters
+    # params = {
+    #     'grant_type': 'refresh_token',
+    #     'refresh_token': data["refresh_token"],
+    #     'client_id': client_id,
+    #     'client_secret': client_secret,
+    # }
+    # headers = {
+    #     'Authorization': 'Bearer {}'.format(data['access_token']),
+    #     'Content-Type': 'application/json',
+    # }
+    
+    
+    # Encode the client id and secret
+    credentials = f'{client_id}:{client_secret}'
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': f'Basic {encoded_credentials}'
+    }
+
+    # Define the parameters
     params = {
         'grant_type': 'refresh_token',
-        'refresh_token': data["refresh_token"],
-        'client_id': client_id,
-        'client_secret': client_secret,
+        'refresh_token': refresh_token
     }
-    headers = {
-        'Authorization': 'Bearer {}'.format(data['access_token']),
-        'Content-Type': 'application/json',
-    }
+
+    # Send the POST request
+    response = requests.post('https://api.twitter.com/2/oauth2/token', headers=headers, data=params)
+
+    # Parse the response
+    #refreshed_token = response.json()
     # Send the refresh token request
     response = requests.post(token_url, params=params, headers=headers)
     print("Status code: ", response.status_code)
@@ -160,3 +184,4 @@ def callback():
 
 if __name__ == "__main__":
     app.run()
+    
