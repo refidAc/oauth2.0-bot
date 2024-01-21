@@ -51,19 +51,47 @@ def run_opensea_stream_client():
         bb_t = t.decode("utf8").replace("'", '"')
         data = json.loads(bb_t)
         # Extract the image URL and price from the payload
-        #payload.item.metadata.image_url
         image_url = payload['payload']['item']['metadata']['image_url']
         price = payload['payload']['base_price']
         price = convert_to_ether(price)
+        # Download the image
+        print(image_url)
+        response = requests.get(image_url)
+        image_data = response.content
+        print("11111")
+        # Upload the image to Twitter
+        upload_response = requests.post(
+            "https://upload.twitter.com/1.1/media/upload.json",
+            params={"command": "INIT"},
+            headers={"Authorization": "Bearer {}".format(data["access_token"])},
+        )
+        print(upload_response.json())
+        media_id = upload_response.json()["media_id_string"]
+        print("22222")
+        upload_response = requests.post(
+            "https://upload.twitter.com/1.1/media/upload.json",
+            params={"command": "APPEND", "media_id": media_id, "segment_index": 0},
+            headers={"Authorization": "Bearer {}".format(data["access_token"])},
+            data=image_data,
+        )
+        print("333333")
+        upload_response = requests.post(
+            "https://upload.twitter.com/1.1/media/upload.json",
+            params={"command": "FINALIZE", "media_id": media_id},
+            headers={"Authorization": "Bearer {}".format(data["access_token"])},
+        )
+        print("444444")
         # Prepare the tweet text
-        tweet_text = f"Test! Price: {price} WETH\n![Image]({image_url})"
+        tweet_text = f"Test! Price: {price} WETH"
+
         # Prepare the payload for the tweet
-        payload = {"status": tweet_text}
+        payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
+
         # Post the tweet
         response = post_tweet(payload, data).json()
-        time.sleep(300)
-        count=count+1
         print(response)
+        time.sleep(300)
+
     
     def post_tweet(payload, token):
         print("Tweeting!")
@@ -102,7 +130,7 @@ token_url = "https://api.twitter.com/2/oauth2/token"
 redirect_uri = os.environ.get("REDIRECT_URI")
 
 # Set the scopes
-scopes = ["tweet.read", "users.read", "tweet.write", "offline.access"]
+scopes = ["tweet.read", "users.read", "tweet.write", "media.read", "media.write", "offline.access"]
 
 # Create a code verifier
 code_verifier = base64.urlsafe_b64encode(os.urandom(30)).decode("utf-8")
