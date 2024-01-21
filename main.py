@@ -50,6 +50,16 @@ def parse_dog_fact():
     dog_fact = requests.request("GET", url).json()
     return dog_fact["facts"][0]
 
+@app.route("/retweet", methods=["GET"])
+def retweet():
+    t = r.get("token")
+    bb_t = t.decode("utf8").replace("'", '"')
+    data = json.loads(bb_t)
+    doggie_fact = parse_dog_fact()
+    payload = {"text": "{}".format(doggie_fact)}
+    response = post_tweet(payload, data).json()
+    return response
+
 def post_tweet(payload, token):
     print("Tweeting!")
     return requests.request(
