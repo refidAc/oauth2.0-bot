@@ -29,7 +29,7 @@ def run_opensea_stream_client():
     opensea_api_key=os.environ.get("OPENSEA_KEY")
     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
     def handle_item_sold(payload: dict):
-        logging.info("Event Handled ::::", payload)
+        logging.info(f"Event Handled ::::"{payload})
 
     def convert_to_ether(amt):
         #bid_wei = int("19416600000000000000")
@@ -37,7 +37,7 @@ def run_opensea_stream_client():
         bid_ether = bid_wei / (10 ** 18)
         logging.info(bid_ether)
         return bid_ether
-
+    print("Started opensea")
     Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
     Client.onEvents(
         collection_slug,
