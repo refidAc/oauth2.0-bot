@@ -38,7 +38,7 @@ data = json.loads(bb_t)
 # payload = {"text": "{}".format(doggie_fact)}
 
 
-main.post_tweet(payload, refreshed_token)
+# main.post_tweet(payload, refreshed_token)
 
 # twitter = main.make_token()
 # client_id = os.environ.get("CLIENT_ID")
@@ -49,11 +49,11 @@ main.post_tweet(payload, refreshed_token)
 # # client_creds_b64 = base64.urlsafe_b64encode(client_creds.encode()).decode()
 
 
-t = main.r.get("token")
-#print(str(t))
-#bb_t = t.decode("utf8").replace("'", '"')
-data = json.loads(t)
-print(data)
+# t = main.r.get("token")
+# #print(str(t))
+# #bb_t = t.decode("utf8").replace("'", '"')
+# data = json.loads(t)
+# print(data)
 
 # print("1111")
 

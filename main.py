@@ -76,10 +76,13 @@ def refresh_token():
     response = requests.post(token_url, params=params)
     refreshed_token = response.json()
     print("we refreshed something!")
-    st_refreshed_token = '"{}"'.format(refreshed_token)
-    j_refreshed_token = json.loads(st_refreshed_token)
-    r.set("token", j_refreshed_token)
-    return json.dumps({"PreviousToken":t,"Token Refreshed?":j_refreshed_token})
+    if(refreshed_token['error'] or refreshed_token['error']!=None):
+        return json.dumps({"Error occured": str(refresh_token)})
+    else:
+        st_refreshed_token = '"{}"'.format(refreshed_token)
+        j_refreshed_token = json.loads(st_refreshed_token)
+        r.set("token", j_refreshed_token)
+        return json.dumps({"PreviousToken":t,"Token Refreshed?":j_refreshed_token})
 
 
 @app.route("/")
