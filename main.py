@@ -9,6 +9,10 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
+# j_token_str = r.get("token")
+# j_token = json.loads(j_token_str.decode('utf-8'))
+# print(j_token)
+
 app = Flask(__name__)
 app.secret_key = os.urandom(50)
 
@@ -73,7 +77,9 @@ def callback():
         code_verifier=code_verifier,
         code=code,
     )
-    st_token = '"{}"'.format(token)
+    #st_token = '"{}"'.format(token)
+    st_token = json.dumps(token)
+    print(st_token)
     j_token = json.loads(st_token)
     r.set("token", j_token)
     doggie_fact = parse_dog_fact()
