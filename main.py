@@ -55,7 +55,7 @@ def run_opensea_stream_client():
         #payload = {"text": tweet_text}
         #Post the tweet
         response = post_tweet(payload, data).json()
-        print(response)
+        #print(response)
         time.sleep(300)
     print("Started opensea")
     Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
