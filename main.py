@@ -19,6 +19,7 @@ from vrtools.vrutil import *
 
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
+global r
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
 # for key in r.scan_iter("prefix:*"):
 #     r.delete(key)
@@ -35,7 +36,7 @@ def run_opensea_stream_client():
     opensea_api_key=os.environ.get("OPENSEA_KEY")
     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins','cryptopunks','coqvshunter']
 
-    r = redis.from_url(os.environ["REDIS_URL_DOGS"])
+    #r = redis.from_url(os.environ["REDIS_URL_DOGS"])
     
     def handle_events(payload: dict):
         logging.error(f"Event Handled ::::{payload}")
