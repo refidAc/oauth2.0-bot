@@ -55,9 +55,9 @@ def run_opensea_stream_client():
             resp = event_sold_handler(payload)
             logging.error(f'finished handling sold event for :: {payload}')
         if slug == 'nuclear-nerds-of-the-accidental-apocalypse':
-            r.rSet('saved_nerd_sold', payload)
+            rSet('saved_nerd_sold', payload)
         if event_type == 'item_sold':
-            r.rSet('saved_any_sold', payload)
+            rSet('saved_any_sold', payload)
         
     def event_sold_handler(payload:dict):
         logging.info(f"Event Handled ::::{payload}")
@@ -301,7 +301,7 @@ def callback():
         code=code,
     )
     raw_token = token
-    r.rSet("raw_token",raw_token)
+    rSet("raw_token",raw_token)
     saveToken("token", token)
     # doggie_fact = parse_dog_fact()
     # payload = {"text": "{}".format(doggie_fact)}
@@ -317,7 +317,7 @@ def reauth():
         code=code,
     )
     raw_t = token
-    r.rSet("raw_token",raw_t)
+    rSet("raw_token",raw_t)
     saveToken("token", token)
     return token
 
