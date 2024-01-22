@@ -16,7 +16,6 @@ import inspect
 from multiprocessing import Process
 import time
 import oauth
-import jsonify
 
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
@@ -163,7 +162,7 @@ code_challenge = code_challenge.replace("=", "")
 
 @app.route('/wakeup', methods=['GET'])
 def wakeup():
-    return jsonify({"i'm": "awake"})
+    return json.dumps({"i'm": "awake"})
 
 def oauthOneConnectFor():
     methodName = "oauthOneConnectFor"
