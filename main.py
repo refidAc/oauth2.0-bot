@@ -302,7 +302,7 @@ def callback():
     )
     raw_token = token
     rSet("raw_token",raw_token)
-    saveToken("token", token)
+    saveToken(token)
     # doggie_fact = parse_dog_fact()
     # payload = {"text": "{}".format(doggie_fact)}
     response = {"Success": "Authed!"}
@@ -318,7 +318,7 @@ def reauth():
     )
     raw_t = token
     rSet("raw_token",raw_t)
-    saveToken("token", token)
+    saveToken(token)
     return token
 
 def run_flask_server():
