@@ -16,11 +16,12 @@ import tweepy
 #from oauth import oauth
 from vrtools.vrutil import *
 
+
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-for key in r.scan_iter("prefix:*"):
-    r.delete(key)
+# for key in r.scan_iter("prefix:*"):
+#     r.delete(key)
 # j_token_str = r.get("save_token")
 # print(f"stred tok :: {str(j_token_str)}")
 # j_token = json.loads(j_token_str.decode('utf-8'))
@@ -36,64 +37,17 @@ def run_opensea_stream_client():
     global count
     count=0
     r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-    # def handle_item_sold(payload: dict):
-    #     logging.info(f"Event Handled ::::{payload}")
-    #     if count==0:
-    #         r.set("single_message_test",json.dumps(payload))
-    #         count=count+1
-    #     print(f"Event Handled ::::{payload}")
     def handle_item_sold(payload: dict):
         logging.info(f"Event Handled ::::{payload}")
         payload = json.loads(r.get("single_message_test"))
         print(f"Event Handled ::::{payload}")
         # Fetch the access token from Redis
-        t = r.get("token")
-        bb_t = t.decode("utf8").replace("'", '"')
-        data = json.loads(bb_t)
+        data = loadToken()
         # Extract the image URL and price from the payload
         image_url = payload['payload']['item']['metadata']['image_url']
         media_id=download_upload_media(image_url)
         price = payload['payload']['base_price']
         price = convert_to_ether(price)
-        # Download the image
-        # print(image_url)
-        # response = requests.get(image_url)
-        # image_data = response.content
-        # print("11111")
-        # # Upload the image to Twitter
-        # # Initialize the upload
-        # init_response = requests.post(
-        #     "https://upload.twitter.com/1.1/media/upload.json",
-        #     params={
-        #         "command": "INIT",
-        #         "total_bytes": len(image_data),
-        #         "media_type": "image/jpeg"
-        #     },
-        #     headers={"Authorization": "Bearer {}".format(data["access_token"])},
-        # )
-        # print("22222")
-        # print(init_response.headers)
-        # print(init_response.status_code)
-        # print(init_response.raw)
-
-        # media_id = init_response.json()
-        
-        # media_id = upload_response.json()["media_id_string"]
-        # print("22222")
-        # upload_response = requests.post(
-        #     "https://upload.twitter.com/1.1/media/upload.json",
-        #     params={"command": "APPEND", "media_id": media_id, "segment_index": 0},
-        #     headers={"Authorization": "Bearer {}".format(data["access_token"])},
-        #     data=image_data,
-        # )
-        # print("333333")
-        # upload_response = requests.post(
-        #     "https://upload.twitter.com/1.1/media/upload.json",
-        #     params={"command": "FINALIZE", "media_id": media_id},
-        #     headers={"Authorization": "Bearer {}".format(data["access_token"])},
-        # )
-        # print("444444")
-        # # Prepare the tweet text
         tweet_text = f"Test! with image! Price: {price} WETH"
         # Prepare the payload for the tweet
         #time.sleep(3)
@@ -103,26 +57,6 @@ def run_opensea_stream_client():
         response = post_tweet(payload, data).json()
         print(response)
         time.sleep(300)
-
-    
-    def post_tweet(payload, token):
-        print("Tweeting!")
-        return requests.request(
-            "POST",
-            "https://api.twitter.com/2/tweets",
-            json=payload,
-            headers={
-                "Authorization": "Bearer {}".format(token["access_token"]),
-                "Content-Type": "application/json",
-            },
-        )
-    def convert_to_ether(amt):
-        #bid_wei = int("19416600000000000000")
-        bid_wei = int(amt)
-        bid_ether = bid_wei / (10 ** 18)
-        logging.info(bid_ether)
-        return bid_ether
-    
     print("Started opensea")
     Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
     Client.onEvents(
@@ -162,17 +96,27 @@ code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
 code_challenge = code_challenge.replace("=", "")
 
-# Create the session
-#global v1
-#v1twitter = OAuth1Session(consumer_key, consumer_secret, access_token, access_token_secret)
-#v1 = OAuth1Session(consumer_key, consumer_secret, access_token, access_token_secret)
+def loadToken():
+    t = r.get("token")
+    bb_t = t.decode("utf8").replace("'", '"')
+    jtoken = json.loads(bb_t)
+    return jtoken
 
+def saveToken(token):
+    st_token = '"{}"'.format(token)
+    j_token = json.loads(st_token)
+    r.set("token", j_token)
+    
+def rGet(key):
+    return json.loads(r.get(key))
+
+def rSet(key,value):
+    return r.set(key,json.dumps(value))
 
 @app.route('/wakeup', methods=['GET'])
 def wakeup():
     print('im awake!')
     return json.dumps({"i'm": "awake"})
-
 
 @app.route('/imageTest', methods=['GET'])
 def download_upload_media(url):
@@ -199,10 +143,6 @@ def download_upload_media(url):
     os.remove("nft.jpg")
     return payload['media']['media_ids']
 
-def run_stream_client():
-    stream_client = OpenSeaStreamClient()
-    stream_client.run()
-
 def make_token():
     return OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scopes)
 
@@ -213,9 +153,7 @@ def parse_dog_fact():
 
 @app.route("/retweet", methods=["GET"])
 def retweet():
-    t = r.get("token")
-    bb_t = t.decode("utf8").replace("'", '"')
-    data = json.loads(bb_t)
+    data=loadToken()
     doggie_fact = parse_dog_fact()
     payload = {"text": "{}".format(doggie_fact)}
     response = post_tweet(payload, data).json()
@@ -250,8 +188,6 @@ def refresh_token():
     #     'Authorization': 'Bearer {}'.format(data['access_token']),
     #     'Content-Type': 'application/json',
     # }
-    
-    
     # Encode the client id and secret
     credentials = f"{client_id}:{client_secret}"
     logging.info(f"credentials :: {credentials}")
@@ -312,7 +248,6 @@ def refresh_token():
 
 @app.route("/")
 def demo():
-
     global twitter
     twitter = make_token()
     authorization_url, state = twitter.authorization_url(
@@ -330,11 +265,9 @@ def callback():
         code_verifier=code_verifier,
         code=code,
     )
-    raw_t = token
-    r.set("raw_token",json.dumps(raw_t))
-    st_token = '"{}"'.format(token)
-    j_token = json.loads(st_token)
-    r.set("token", j_token)
+    raw_token = token
+    r.rSet("raw_token",raw_token)
+    saveToken("token", token)
     # doggie_fact = parse_dog_fact()
     # payload = {"text": "{}".format(doggie_fact)}
     response = {"Success": "Authed!"}
@@ -349,33 +282,9 @@ def reauth():
         code=code,
     )
     raw_t = token
-    r.set("raw_token",json.dumps(raw_t))
-    st_token = '"{}"'.format(token)
-    j_token = json.loads(st_token)
-    r.set("token", j_token)
+    r.rSet("raw_token",raw_t)
+    saveToken("token", token)
     return token
-
-
-
-# @app.route("/oauth/callback", methods=["GET"])
-# def callback():
-#     code = request.args.get("code")
-#     token = twitter.fetch_token(
-#         token_url=token_url,
-#         client_secret=client_secret,
-#         code_verifier=code_verifier,
-#         code=code,
-#     )
-#     save_token = token
-#     save_token = json.dumps(save_token)
-#     r.set("save_token", save_token)
-#     st_token = '"{}"'.format(token)
-#     j_token = json.loads(st_token)
-#     r.set("token", j_token)
-#     doggie_fact = parse_dog_fact()
-#     payload = {"text": "{}".format(doggie_fact)}
-#     response = post_tweet(payload, token).json()
-#     return response
 
 def run_flask_server():
     app.run()
