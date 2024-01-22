@@ -33,7 +33,7 @@ def run_opensea_stream_client():
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting opensea client loop...")
     opensea_api_key=os.environ.get("OPENSEA_KEY")
-    collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins','cryptopunks']
+    collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins','cryptopunks','coqvshunter']
 
     r = redis.from_url(os.environ["REDIS_URL_DOGS"])
     
@@ -76,9 +76,11 @@ def run_opensea_stream_client():
         payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
         #payload = {"text": tweet_text}
         #Post the tweet
+        print("TWEETING!")
         response = post_tweet(payload, data).json()
         #print(response)
         return response
+    
     def collect_statistics(slug_event_type:str):
         print('entered collect stats')
         now = datetime.now()
@@ -93,11 +95,12 @@ def run_opensea_stream_client():
     Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
     Client.onEvents(
         collection_slug,
-        [EventTypes.ITEM_RECEIVED_OFFER, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_CANCELLED, EventTypes.ITEM_LISTED, EventTypes.ITEM_METADATA_UPDATED, EventTypes.ITEM_RECEIVED_BID, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_SOLD],
+        [EventTypes.ITEM_RECEIVED_OFFER, EventTypes.ITEM_RECEIVED_BID, EventTypes.ITEM_SOLD],
         handle_events
         )
     Client.startListening()
     
+#        [EventTypes.ITEM_RECEIVED_OFFER, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_CANCELLED, EventTypes.ITEM_LISTED, EventTypes.ITEM_METADATA_UPDATED, EventTypes.ITEM_RECEIVED_BID, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_SOLD],
 
 #########################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################
@@ -193,16 +196,15 @@ def retweet():
 
 def post_tweet(payload, token):
     print("Tweeting!")
-    # return requests.request(
-    #     "POST",
-    #     "https://api.twitter.com/2/tweets",
-    #     json=payload,
-    #     headers={
-    #         "Authorization": "Bearer {}".format(token["access_token"]),
-    #         "Content-Type": "application/json",
-    #     },
-    # )
-    return json.dumps({"pretend like i tweeted":"something"})
+    return requests.request(
+        "POST",
+        "https://api.twitter.com/2/tweets",
+        json=payload,
+        headers={
+            "Authorization": "Bearer {}".format(token["access_token"]),
+            "Content-Type": "application/json",
+        },
+    )
 
 @app.route("/testrefresh", methods=["GET"])
 def refresh_token():
