@@ -52,6 +52,7 @@ def run_opensea_stream_client():
         data = json.loads(bb_t)
         # Extract the image URL and price from the payload
         image_url = payload['payload']['item']['metadata']['image_url']
+        media_id=download_upload_media(image_url)
         price = payload['payload']['base_price']
         price = convert_to_ether(price)
         # Download the image
@@ -94,9 +95,9 @@ def run_opensea_stream_client():
         # print("444444")
         # # Prepare the tweet text
         tweet_text = f"Test! with image! Price: {price} WETH"
-
         # Prepare the payload for the tweet
-        payload = {"text": tweet_text, "attachments": {"media_keys": ["1749238489722339328"]}}
+        #time.sleep(3)
+        payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
         #payload = {"text": tweet_text}
         #Post the tweet
         response = post_tweet(payload, data).json()
@@ -172,8 +173,9 @@ def wakeup():
     print('im awake!')
     return json.dumps({"i'm": "awake"})
 
+
 @app.route('/imageTest', methods=['GET'])
-def download_upload_media(url, ):
+def download_upload_media(url):
     #download
     #reformat width
     url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
@@ -190,41 +192,12 @@ def download_upload_media(url, ):
         "{}".format(os.environ.get("ACCESS_TOKEN_SECRET")),
     )
     tweepy_api = tweepy.API(tweepy_auth)
-    post = tweepy_api.simple_upload("nft1.jpg")
+    post = tweepy_api.simple_upload("nft.jpg")
     text = str(post)
     media_id = re.search("media_id=(.+?),", text).group(1)
     payload = {"media": {"media_ids": ["{}".format(media_id)]}}
     os.remove("nft.jpg")
-    print(payload)
-    return payload
-
-# def uploadImage():
-#     with open('image.jpg', 'rb') as img:
-#         # Define the headers for the multipart/form-data POST request
-#         headers = {'Content-Type': 'application/octet-stream'}
-        
-#         # # Initialize the upload
-#         # response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'INIT','total_bytes':os.path.getsize('image.jpg'),'media_type':'image/jpeg'}, data=img, headers=headers)
-#         # print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
-#         # media_id = response.json()['media_id']
-#         # print(f'jpeg size: {os.path.getsize("image.jpg")}')
-#         # # Append the media segments
-
-#         # # Finalize the upload
-#         # response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'FINALIZE','media_id':media_id},data='')
-#         # print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
-        
-#                 # Initialize the upload
-#         response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'INIT','total_bytes':os.path.getsize('image.jpg'),'media_type':'image/jpeg'}, data=img, headers=headers)
-#         print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
-#         media_id = response.json()['media_id']
-
-#         # Finalize the upload
-#         response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'FINALIZE','media_id':media_id},data='')
-#         print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
-#     return response.json()
-
-
+    return payload['media']['media_ids']
 
 def run_stream_client():
     stream_client = OpenSeaStreamClient()
