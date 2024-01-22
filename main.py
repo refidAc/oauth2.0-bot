@@ -6,6 +6,7 @@ import json
 import requests
 import redis
 from requests_oauthlib import OAuth2Session
+from requests_oauthlib import OAuth1Session
 from flask import Flask, redirect, session, request
 import logging
 from urllib.parse import urlencode
@@ -15,7 +16,10 @@ import asyncio
 import inspect
 from multiprocessing import Process
 import time
-import oauth
+import tweepy
+#from oauth import oauth
+from rauth import OAuth1Session
+from vrtools.vrutil import *
 
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
@@ -94,12 +98,12 @@ def run_opensea_stream_client():
         # )
         # print("444444")
         # # Prepare the tweet text
-        tweet_text = f"Test! Price: {price} WETH"
+        tweet_text = f"Test! with image! Price: {price} WETH"
 
         # Prepare the payload for the tweet
-        #payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
-        payload = {"text": tweet_text}
-        # Post the tweet
+        payload = {"text": tweet_text, "attachments": {"media_keys": ["1749238489722339328"]}}
+        #payload = {"text": tweet_text}
+        #Post the tweet
         response = post_tweet(payload, data).json()
         print(response)
         time.sleep(300)
@@ -131,6 +135,8 @@ def run_opensea_stream_client():
         handle_item_sold
         )
     Client.startListening()
+    
+
 #########################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################
@@ -160,17 +166,75 @@ code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
 code_challenge = code_challenge.replace("=", "")
 
+# Create the session
+#global v1
+#v1twitter = OAuth1Session(consumer_key, consumer_secret, access_token, access_token_secret)
+#v1 = OAuth1Session(consumer_key, consumer_secret, access_token, access_token_secret)
+
+
 @app.route('/wakeup', methods=['GET'])
 def wakeup():
+    print('im awake!')
     return json.dumps({"i'm": "awake"})
 
-def oauthOneConnectFor():
-    methodName = "oauthOneConnectFor"
+@app.route('/imageTest', methods=['GET'])
+def download_upload_media(url, ):
+    #download
+    #reformat width
+    url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
+    url = url_change_width(url,150)
+    resp = requests.get(url)
+    image_data = resp.content
+    with open("nft.jpg", "wb") as handler:
+        handler.write(image_data)
+    #upload
+    tweepy_auth = tweepy.OAuth1UserHandler(
+        "{}".format(os.environ.get("API_KEY")),
+        "{}".format(os.environ.get("API_SECRET")),
+        "{}".format(os.environ.get("ACCESS_TOKEN")),
+        "{}".format(os.environ.get("ACCESS_TOKEN_SECRET")),
+    )
+    tweepy_api = tweepy.API(tweepy_auth)
+    post = tweepy_api.simple_upload("nft1.jpg")
+    text = str(post)
+    media_id = re.search("media_id=(.+?),", text).group(1)
+    payload = {"media": {"media_ids": ["{}".format(media_id)]}}
+    os.remove("nft.jpg")
+    print(payload)
+    return payload
+
+# def uploadImage():
+#     with open('image.jpg', 'rb') as img:
+#         # Define the headers for the multipart/form-data POST request
+#         headers = {'Content-Type': 'application/octet-stream'}
+        
+#         # # Initialize the upload
+#         # response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'INIT','total_bytes':os.path.getsize('image.jpg'),'media_type':'image/jpeg'}, data=img, headers=headers)
+#         # print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
+#         # media_id = response.json()['media_id']
+#         # print(f'jpeg size: {os.path.getsize("image.jpg")}')
+#         # # Append the media segments
+
+#         # # Finalize the upload
+#         # response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'FINALIZE','media_id':media_id},data='')
+#         # print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
+        
+#                 # Initialize the upload
+#         response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'INIT','total_bytes':os.path.getsize('image.jpg'),'media_type':'image/jpeg'}, data=img, headers=headers)
+#         print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
+#         media_id = response.json()['media_id']
+
+#         # Finalize the upload
+#         response = v1.post('https://upload.twitter.com/1.1/media/upload.json', params={'command':'FINALIZE','media_id':media_id},data='')
+#         print(f"Status Code: {response.status_code}\nResponse Text: {response.text}")
+#     return response.json()
+
+
 
 def run_stream_client():
     stream_client = OpenSeaStreamClient()
     stream_client.run()
-    
+
 def make_token():
     return OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scopes)
 
@@ -280,6 +344,7 @@ def refresh_token():
 
 @app.route("/")
 def demo():
+
     global twitter
     twitter = make_token()
     authorization_url, state = twitter.authorization_url(
@@ -305,7 +370,7 @@ def callback():
     # doggie_fact = parse_dog_fact()
     # payload = {"text": "{}".format(doggie_fact)}
     response = {"Success": "Authed!"}
-    return jsonify(response)
+    return json.dumps(response)
 
 def reauth():
     code = request.args.get("code")
