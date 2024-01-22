@@ -172,11 +172,11 @@ def wakeup():
     print('im awake!')
     return json.dumps({"i'm": "awake"})
 
-@app.route('/imageTest', methods=['GET'])
+@app.route('/dlupmedia', methods=['GET'])
 def download_upload_media(url):
     #download
     #reformat width
-    url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
+    #url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
     url = url_change_width(url,150)
     resp = requests.get(url)
     image_data = resp.content
