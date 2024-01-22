@@ -13,7 +13,7 @@ from opensea_sdk import *
 from multiprocessing import Process
 import time
 import tweepy
-#from oauth import oauth
+from datetime import datetime
 from vrtools.vrutil import *
 
 
@@ -33,11 +33,33 @@ def run_opensea_stream_client():
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting opensea client loop...")
     opensea_api_key=os.environ.get("OPENSEA_KEY")
-    collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins']
-    global count
-    count=0
+    collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins','cryptopunks']
+
     r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-    def handle_item_sold(payload: dict):
+    
+    def handle_events(payload: dict):
+        logging.error(f"Event Handled ::::{payload}")
+        # Get current date
+        # payload.collection.slug
+        slug=payload['payload']['collection']['slug']
+        # print("====================================================")
+        # print(slug)
+        # print("====================================================")
+        # print(payload)
+        event_type=payload['event_type']
+        key=slug+"_"+event_type
+        collect_statistics(key)
+        print(f'slug_event:: {key}',flush=True)
+        logging.error('slug_event:: {key}')
+        if key == 'nuclear-nerds-of-the-accidental-apocalypse_item_sold':
+            resp = event_sold_handler(payload)
+            logging.error(f'finished handling sold event for :: {payload}')
+        if slug == 'nuclear-nerds-of-the-accidental-apocalypse':
+            r.rSet('saved_nerd_sold', payload)
+        if event_type == 'item_sold':
+            r.rSet('saved_any_sold', payload)
+        
+    def event_sold_handler(payload:dict):
         logging.info(f"Event Handled ::::{payload}")
         payload = json.loads(r.get("single_message_test"))
         print(f"Event Handled ::::{payload}")
@@ -56,13 +78,23 @@ def run_opensea_stream_client():
         #Post the tweet
         response = post_tweet(payload, data).json()
         #print(response)
-        time.sleep(300)
+        return response
+    def collect_statistics(slug_event_type:str):
+        print('entered collect stats')
+        now = datetime.now()
+        # Create keys for today and this month
+        today = f"{slug_event_type}_{now.year}-{now.month}-{now.day}"
+        this_month = f"{slug_event_type}_{now.year}-{now.month}"
+        # Increment counters
+        r.incr(today)
+        r.incr(this_month)
+
     print("Started opensea")
     Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
     Client.onEvents(
         collection_slug,
         [EventTypes.ITEM_RECEIVED_OFFER, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_CANCELLED, EventTypes.ITEM_LISTED, EventTypes.ITEM_METADATA_UPDATED, EventTypes.ITEM_RECEIVED_BID, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_SOLD],
-        handle_item_sold
+        handle_events
         )
     Client.startListening()
     
