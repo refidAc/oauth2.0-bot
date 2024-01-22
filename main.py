@@ -43,17 +43,18 @@ def run_opensea_stream_client():
     global count
     count = 0
     def handle_item_sold(payload: dict):
-            logging.info(f"Event Handled ::::{payload}")
-            payload = json.loads(r.get("single_message_test"))
-            print(f"Event Handled ::::{payload}")
-            # Fetch the access token from Redis
-            t = r.get("token")
-            bb_t = t.decode("utf8").replace("'", '"')
-            data = json.loads(bb_t)
-            # Extract the image URL and price from the payload
-            image_url = payload['payload']['item']['metadata']['image_url']
-            price = payload['payload']['base_price']
-            price = convert_to_ether(price)
+        logging.info(f"Event Handled ::::{payload}")
+        payload = json.loads(r.get("single_message_test"))
+        print(f"Event Handled ::::{payload}")
+        # Fetch the access token from Redis
+        t = r.get("token")
+        bb_t = t.decode("utf8").replace("'", '"')
+        data = json.loads(bb_t)
+        # Extract the image URL and price from the payload
+        image_url = payload['payload']['item']['metadata']['image_url']
+        price = payload['payload']['base_price']
+        price = convert_to_ether(price)
+        r.set("app_verify","true")
             
     def handle_events(payload: dict):
         logging.error(f"Event Handled ::::{payload}")
