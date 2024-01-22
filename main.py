@@ -31,6 +31,7 @@ r = redis.from_url(os.environ["REDIS_URL_DOGS"])
 
 #####OPENSEA CONFIG############
 def run_opensea_stream_client():
+    
     logging.basicConfig(level=logging.INFO)
     logging.error("Starting opensea client loop...")
     print("inside run opensea stream")
@@ -39,7 +40,8 @@ def run_opensea_stream_client():
     print('attempting to connect to redis')
     r = redis.from_url(os.environ["REDIS_URL_DOGS"])
     print('connected to redis')
-  
+    global count
+    count = 0
     def handle_events(payload: dict):
         logging.error(f"Event Handled ::::{payload}")
         # Get current date
