@@ -424,6 +424,7 @@ def refresh_token():
     t = r.get("token")
     bb_t = t.decode("utf8").replace("'", '"')
     data = json.loads(bb_t)
+    data=rGet("token")
     # # Prepare the refresh token request parameters
     # params = {
     #     'grant_type': 'refresh_token',
@@ -508,20 +509,20 @@ def demo():
 @app.route("/oauth/callback", methods=["GET"])
 def callback():
     code = request.args.get("code")
+    r.set("req_code",code)
     token = twitter.fetch_token(
         token_url=token_url,
         client_secret=client_secret,
         code_verifier=code_verifier,
         code=code,
     )
-    st_token = '"{}"'.format(token)
-    j_token = json.loads(st_token)
-    r.set("token", j_token)
-    doggie_fact = parse_dog_fact()
-    #payload = {"text": "{}".format(doggie_fact)}
-    #response = post_tweet(payload, token).json()
-    response = {"I'm","authed"}
-    return response
+    raw_token = token
+    rSet("raw_token",raw_token)
+    saveToken(token)
+    # doggie_fact = parse_dog_fact()
+    # payload = {"text": "{}".format(doggie_fact)}
+    response = {"Success": "Authed!"}
+    return json.dumps(response)
 
 #@app.route("/oauth/callback", methods=["GET"])
 # def callback():
