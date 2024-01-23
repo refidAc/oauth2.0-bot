@@ -240,7 +240,7 @@ def convert_to_jpg(image):
 def download_upload_media(url):
     #download
     #reformat width
-    #url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
+    #url = 'https://i.seadn.io/gcs/files/e3a2 s744c538cb97625d93967425b24d4.png?w=500&auto=format'
 # Parse the URL
     parsed_url = urlparse(url)
     # Get the file extension
@@ -577,13 +577,13 @@ def reauth():
     saveToken(token)
     return json.dumps({'I':'Reauthed'})
 
-def run_flask_server():
-    #refresh_token()
-    app.run()
+# def run_flask_server():
+#     #refresh_token()
+#     app.run()
 
 if __name__ == '__main__':
     # p1 = Process(target=run_opensea_stream_client)
-    run_flask_server()
+    app.run()
     # p1.start()
     # p2.start()
     # p1.join()
