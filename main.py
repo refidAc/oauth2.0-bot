@@ -304,11 +304,14 @@ def event_sold_handler():
     logging.info(f"Event Handled ::::{payload}")
     print(f"Event Handled ::::{payload}")
     # Fetch the access token from Redis
+    reauth()
     data = loadToken()
     # Extract the image URL and price from the payload
     metadata = extract_sold_item_info(payload)
     image_url = metadata['image_url']
-    media_id=download_upload_media(image_url)
+    media_id = None
+    if image_url != None:
+        media_id=download_upload_media(image_url)
     # price = payload['payload']['base_price']
     tweet_text = "{} bought for {} {} (${} USD) by {} from {} {}".format(
         metadata['nft_name'],
@@ -322,8 +325,10 @@ def event_sold_handler():
     print(tweet_text)
     # Prepare the payload for the tweet
     #time.sleep(3)
-    payload = {"text": tweet_text, "media": {"media_ids": media_id}}
-    #payload = {"text": tweet_text}
+    if media_id != None:
+        payload = {"text": tweet_text, "media": {"media_ids": media_id}}
+    else:
+        payload = {"text": tweet_text}
     #Post the tweet
     print("TWEETING!")
     response = post_tweet(payload, data).json()
@@ -334,6 +339,7 @@ def event_sold_handler():
 
 def post_tweet(payload, aToken):
     print("Tweeting!")
+    
     return requests.request(
         "POST",
         "https://api.twitter.com/2/tweets",
@@ -433,6 +439,7 @@ def demo():
 @app.route("/oauth/callback", methods=["GET"])
 def callback():
     code = request.args.get("code")
+    r.set("req_code",code)
     token = twitter.fetch_token(
         token_url=token_url,
         client_secret=client_secret,
@@ -450,7 +457,8 @@ def callback():
 def reauth():
     global twitter
     twitter = make_token()
-    code = request.args.get("code")
+    #code = request.args.get("code")
+    code=r.get('req_code')
     token = twitter.fetch_token(
         token_url=token_url,
         client_secret=client_secret,
