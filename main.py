@@ -160,7 +160,7 @@ c_password = os.environ.get("C_PASSWORD")
 users = {
     f'{c_username}': generate_password_hash(f'{c_password}')
 }
-auth = HTTPBasicAuth(client_id, client_secret)
+basic_auth = HTTPBasicAuth(client_id, client_secret)
 
 def extract_sold_item_info(payload:dict):
     
@@ -210,13 +210,13 @@ def rSet(key,value):
     return r.set(key,json.dumps(value))
 
 
-@auth.verify_password
+@basic_auth.verify_password
 def verify_password(username, password):
     if username in users and check_password_hash(users.get(username), password):
         return username
 
 @app.route('/echo', methods=['POST'])
-@auth.login_required
+@basic_auth.login_required
 def echo():
     data = request.get_json()
     return json.dumps(data), 200
@@ -337,7 +337,7 @@ def retweet():
 #     return response
 
 @app.route("/eventSoldHandler", methods=["POST"])
-@auth.login_required
+@basic_auth.login_required
 def event_sold_handler():
     
     payload = request.get_json()
@@ -504,26 +504,25 @@ def demo():
         auth_url, code_challenge=code_challenge, code_challenge_method="S256"
     )
     session["oauth_state"] = state
-    r.set("Auth_Url",authorization_url)
     return redirect(authorization_url)
+
 
 @app.route("/oauth/callback", methods=["GET"])
 def callback():
     code = request.args.get("code")
-    r.set("req_code",code)
     token = twitter.fetch_token(
         token_url=token_url,
         client_secret=client_secret,
         code_verifier=code_verifier,
         code=code,
     )
-    raw_token = token
-    rSet("raw_token",raw_token)
-    saveToken(token)
-    # doggie_fact = parse_dog_fact()
-    # payload = {"text": "{}".format(doggie_fact)}
-    response = {"Success": "Authed!"}
-    return json.dumps(response)
+    st_token = '"{}"'.format(token)
+    j_token = json.loads(st_token)
+    r.set("token", j_token)
+    doggie_fact = parse_dog_fact()
+    payload = {"text": "{}".format(doggie_fact)}
+    response = post_tweet(payload, token).json()
+    return response
 
 #@app.route("/oauth/callback", methods=["GET"])
 # def callback():
