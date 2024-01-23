@@ -34,6 +34,8 @@ for key in keys:
 
 r.delete("ran_echo_once")
 r.delete("ran_post_once")
+r.delete("ran_post_once_local")
+
 # Print all values
 #print(json.dumps(all_values, indent=4))
 # testpayload={

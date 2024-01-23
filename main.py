@@ -242,7 +242,8 @@ def download_upload_media(url):
     text = str(post)
     media_id = re.search("media_id=(.+?),", text).group(1)
     payload = {"media": {"media_ids": ["{}".format(media_id)]}}
-    #os.remove(filename)
+    print(f"media_payload :: {payload}")
+    os.remove(filename)
     return payload['media']['media_ids']
 
 def make_token():
@@ -276,7 +277,7 @@ def event_sold_handler():
     image_url = metadata['image_url']
     media_id=download_upload_media(image_url)
     # price = payload['payload']['base_price']
-    tweet_text = f"{0} bought for {1} {2} by {3} from {4} {5}".format(
+    tweet_text = "{} bought for {} {} by {} from {} {}".format(
         metadata['nft_name'],
         metadata['amount_token'],
         metadata['amount_symbol'],
@@ -284,6 +285,7 @@ def event_sold_handler():
         metadata['to_address'],
         metadata['encoded_nft_link']
     )
+    print(tweet_text)
     # Prepare the payload for the tweet
     #time.sleep(3)
     payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
@@ -291,17 +293,18 @@ def event_sold_handler():
     #Post the tweet
     print("TWEETING!")
     response = post_tweet(payload, data).json()
+    print(f"response from tweeting {response}")
     #print(response)
     return response
 
-def post_tweet(payload, token):
+def post_tweet(payload, aToken):
     print("Tweeting!")
     return requests.request(
         "POST",
         "https://api.twitter.com/2/tweets",
         json=payload,
         headers={
-            "Authorization": "Bearer {}".format(token["access_token"]),
+            "Authorization": "Bearer {}".format(aToken["access_token"]),
             "Content-Type": "application/json",
         },
     )
