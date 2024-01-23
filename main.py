@@ -518,8 +518,9 @@ def callback():
     j_token = json.loads(st_token)
     r.set("token", j_token)
     doggie_fact = parse_dog_fact()
-    payload = {"text": "{}".format(doggie_fact)}
-    response = post_tweet(payload, token).json()
+    #payload = {"text": "{}".format(doggie_fact)}
+    #response = post_tweet(payload, token).json()
+    response = json.dumps({"I'm","authed"})
     return response
 
 #@app.route("/oauth/callback", methods=["GET"])
