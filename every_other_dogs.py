@@ -12,19 +12,41 @@ import redis
 def contains_substring(string, substring):
     return substring in string
 
-def totalCoundSoldEvents(keys):
-    total=0
+def totalCountSoldEvents(keys):
+    ret={}
+    total_item_sold=0
+    total_bid=0
+    total_item_received_offer=0
     for key in keys:
         key=key.decode('utf-8')
         if contains_substring(key, 'item_sold'):
-            #print((key))
-            # Get the value associated with the key
             value = r.get(str(key))
             value_str = value.decode('utf-8')
-            #print(value_str)
-            total = total +int(value_str)
-            all_values[key] = value
-    return total
+            try:
+                total_item_sold = total_item_sold +int(value_str)
+                all_values[key] = value
+            except Exception as e:
+                continue
+        elif contains_substring(key, 'item_received_bid'):
+            value = r.get(str(key))
+            value_str = value.decode('utf-8')
+            try:
+                total_bid = total_bid +int(value_str)
+                all_values[key] = value
+            except Exception as e:
+                continue
+        elif contains_substring(key, 'item_received_offer'):
+            value = r.get(str(key))
+            value_str = value.decode('utf-8')
+            try:
+                total_item_received_offer = total_item_received_offer +int(value_str)
+                all_values[key] = value
+            except Exception as e:
+                continue
+    ret['sold events']=total_item_sold
+    ret['bids']=total_bid
+    ret['offers']=total_item_received_offer
+    return ret
 
 
 
@@ -53,7 +75,7 @@ for key in keys:
     value_str = value.decode('utf-8')
     print(value_str)
     all_values[key] = value
-print(totalCoundSoldEvents(keys))
+print(json.dumps(totalCountSoldEvents(keys)))
 r.delete("ran_echo_once")
 r.delete("ran_post_once")
 r.delete("ran_post_once_local")

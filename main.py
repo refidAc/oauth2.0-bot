@@ -420,7 +420,7 @@ def post_tweet(payload, aToken):
 
     return response
 
-#@app.route("/testrefresh", methods=["GET"])
+@app.route("/testrefresh", methods=["GET"])
 def refresh_token():
     print("Refreshing!")
     t = r.get("token")
@@ -524,6 +524,33 @@ def callback():
     # payload = {"text": "{}".format(doggie_fact)}
     response = {"Success": "Authed!"}
     return json.dumps(response)
+
+#@app.route("/oauth/callback", methods=["GET"])
+# def callback():
+#     code = request.args.get("code")
+#     token = twitter.fetch_token(
+#         token_url=token_url,
+#         client_secret=client_secret,
+#         code_verifier=code_verifier,
+#         code=code,
+#     )
+#     user_me = requests.request(
+#         "GET",
+#         "https://api.twitter.com/2/users/me",
+#         headers={"Authorization": "Bearer {}".format(token["access_token"])},
+#     ).json()
+#     print(user_me)
+#     user_id = user_me["data"]["id"]
+#     tokens = {"new_token": token}
+#     t = tokens["new_token"]
+#     refreshed_token = twitter.refresh_token(
+#           client_id=client_id,
+#           client_secret=client_secret,
+#           token_url=token_url,
+#           refresh_token=t["refresh_token"],
+#         )
+#     tokens.update({"new_token": refreshed_token})
+#     return "You should now have a refreshed token"
 
 @app.route("/test/reauth", methods=["GET"])
 def reauth():
