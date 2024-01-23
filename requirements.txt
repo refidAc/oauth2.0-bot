@@ -15,6 +15,7 @@ MarkupSafe==2.1.4
 oauthlib==3.2.2
 opensea-stream==0.1.0
 packaging==23.2
+pillow==10.2.0
 python-dateutil==2.8.2
 rauth==0.7.3
 realtime==1.0.2
