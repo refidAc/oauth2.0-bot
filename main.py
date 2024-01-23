@@ -160,6 +160,7 @@ c_password = os.environ.get("C_PASSWORD")
 users = {
     f'{c_username}': generate_password_hash(f'{c_password}')
 }
+auth = HTTPBasicAuth(client_id, client_secret)
 
 def extract_sold_item_info(payload:dict):
     
@@ -493,6 +494,7 @@ def callback():
     response = {"Success": "Authed!"}
     return json.dumps(response)
 
+@app.route("/test/reauth", methods=["GET"])
 def reauth():
     #code = request.args.get("code")
     code=r.get('req_code')
@@ -502,7 +504,7 @@ def reauth():
     #     code_verifier=code_verifier,
     #     code=code,
     # )
-    auth = HTTPBasicAuth(client_id, client_secret)
+    
     token = twitter.fetch_token(
         token_url=token_url,
         authorization_response=r.get("Auth_Url"),
@@ -514,7 +516,7 @@ def reauth():
     raw_t = token
     rSet("raw_token",raw_t)
     saveToken(token)
-    return token
+    return json.dumps({'I':'Reauthed'})
 
 def run_flask_server():
     #refresh_token()
