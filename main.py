@@ -10,8 +10,6 @@ from flask import Flask, redirect, session, request
 import logging
 from urllib.parse import urlencode, urlsplit
 from opensea_sdk import *
-from multiprocessing import Process
-import time
 import tweepy
 from datetime import datetime
 from vrtools.vrutil import *
@@ -136,7 +134,7 @@ r = redis.from_url(os.environ["REDIS_URL_DOGS"])
 
 
 app = Flask(__name__)
-auth = HTTPBasicAuth()
+#auth = HTTPBasicAuth()
 app.secret_key = os.urandom(50)
 client_id = os.environ.get("CLIENT_ID")
 client_secret = os.environ.get("CLIENT_SECRET")
@@ -160,7 +158,7 @@ c_password = os.environ.get("C_PASSWORD")
 users = {
     f'{c_username}': generate_password_hash(f'{c_password}')
 }
-basic_auth = HTTPBasicAuth(client_id, client_secret)
+basic_auth = HTTPBasicAuth()
 
 def extract_sold_item_info(payload:dict):
     
