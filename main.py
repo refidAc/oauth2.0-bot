@@ -295,6 +295,43 @@ def retweet():
     response = post_tweet(payload, data).json()
     return response
 
+@app.route('/simulateSoldEvent"', methods=['GET']
+    payload = rGet("saved_any_sold")
+    logging.info(f"Event Handled ::::{payload}")
+    print(f"Event Handled ::::{payload}")
+    # Fetch the access token from Redis
+    #reauth()
+    data = loadToken()
+    # Extract the image URL and price from the payload
+    metadata = extract_sold_item_info(payload)ß
+    image_url = metadata['image_url']
+    media_id = None
+    if image_url != None:
+        media_id=download_upload_media(image_url)
+    # price = payload['payload']['base_price']
+    tweet_text = "{} bought for {} {} (${} USD) by {} from {} {}".format(
+        metadata['nft_name'],
+        metadata['amount_token'],
+        metadata['amount_symbol'],
+        metadata['amount_usd'],
+        metadata['from_address'][:8],
+        metadata['to_address'][:8],
+        metadata['nft_link']
+    )
+    print(tweet_text)
+    # Prepare the payload for the tweet
+    #time.sleep(3)
+    if media_id != None:
+        payload = {"text": tweet_text, "media": {"media_ids": media_id}}
+    else:
+        payload = {"text": tweet_text}
+    #Post the tweet
+    print("TWEETING!")
+    response = post_tweet(payload, data).json()
+    Logger(f"response from tweeting {response}").error()
+    Logger(f"response from tweeting full ::: {response}").error()
+    #print(response)
+    return response
 
 @app.route("/eventSoldHandler", methods=["POST"])
 @auth.login_required
@@ -304,7 +341,7 @@ def event_sold_handler():
     logging.info(f"Event Handled ::::{payload}")
     print(f"Event Handled ::::{payload}")
     # Fetch the access token from Redis
-    reauth()
+    #reauth()
     data = loadToken()
     # Extract the image URL and price from the payload
     metadata = extract_sold_item_info(payload)
@@ -455,8 +492,6 @@ def callback():
     return json.dumps(response)
 
 def reauth():
-    global twitter
-    twitter = make_token()
     #code = request.args.get("code")
     code=r.get('req_code')
     token = twitter.fetch_token(
