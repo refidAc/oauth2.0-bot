@@ -304,7 +304,7 @@ def simulateEvent():
     #reauth()
     data = loadToken()
     # Extract the image URL and price from the payload
-    metadata = extract_sold_item_info(payload)ß
+    metadata = extract_sold_item_info(payload)
     image_url = metadata['image_url']
     media_id = None
     if image_url != None:
