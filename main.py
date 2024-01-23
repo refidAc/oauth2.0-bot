@@ -472,6 +472,7 @@ def demo():
         auth_url, code_challenge=code_challenge, code_challenge_method="S256"
     )
     session["oauth_state"] = state
+    r.set("Auth_Url",authorization_url)
     return redirect(authorization_url)
 
 @app.route("/oauth/callback", methods=["GET"])
@@ -495,11 +496,19 @@ def callback():
 def reauth():
     #code = request.args.get("code")
     code=r.get('req_code')
+    # token = twitter.fetch_token(
+    #     token_url=token_url,
+    #     client_secret=client_secret,
+    #     code_verifier=code_verifier,
+    #     code=code,
+    # )
     token = twitter.fetch_token(
         token_url=token_url,
-        client_secret=client_secret,
+        authorization_response=r.get("Auth_Url"),
+        auth=False,
+        client_id=client_id,
+        include_client_id=True,
         code_verifier=code_verifier,
-        code=code,
     )
     raw_t = token
     rSet("raw_token",raw_t)
