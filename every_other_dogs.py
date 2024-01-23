@@ -9,6 +9,25 @@ import json
 import os
 import redis
 
+def contains_substring(string, substring):
+    return substring in string
+
+def totalCoundSoldEvents(keys):
+    total=0
+    for key in keys:
+        key=key.decode('utf-8')
+        if contains_substring(key, 'item_sold'):
+            #print((key))
+            # Get the value associated with the key
+            value = r.get(str(key))
+            value_str = value.decode('utf-8')
+            #print(value_str)
+            total = total +int(value_str)
+            all_values[key] = value
+    return total
+
+
+
 twitter = main.make_token()
 client_id = os.environ.get("CLIENT_ID")
 client_secret = os.environ.get("CLIENT_SECRET")
@@ -23,18 +42,23 @@ keys = r.keys()
 all_values = {}
 print(keys)
 # Iterate over all keys
+total = 0
 for key in keys:
-    print((key))
+    
     key=key.decode('utf-8')
+    
+    print((key))
     # Get the value associated with the key
     value = r.get(str(key))
     value_str = value.decode('utf-8')
     print(value_str)
     all_values[key] = value
-
+print(totalCoundSoldEvents(keys))
 r.delete("ran_echo_once")
 r.delete("ran_post_once")
 r.delete("ran_post_once_local")
+
+
 
 # Print all values
 #print(json.dumps(all_values, indent=4))

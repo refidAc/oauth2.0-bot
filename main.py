@@ -296,45 +296,45 @@ def retweet():
     response = post_tweet(payload, data).json()
     return response
 
-@app.route('/simulateSoldEvent', methods=['GET'])
-def simulateEvent():
-    payload = rGet("saved_any_sold")
-    logging.info(f"Event Handled ::::{payload}")
-    app.logger.info(f"Event Handled ::::{payload}")
-    print(f"Event Handled ::::{payload}")
-    # Fetch the access token from Redis
-    #reauth()
-    data = loadToken()
-    # Extract the image URL and price from the payload
-    metadata = extract_sold_item_info(payload)
-    image_url = metadata['image_url']
-    media_id = None
-    if image_url != None:
-        media_id=download_upload_media(image_url)
-    # price = payload['payload']['base_price']
-    tweet_text = "{} bought for {} {} (${} USD) by {} from {} {}".format(
-        metadata['nft_name'],
-        metadata['amount_token'],
-        metadata['amount_symbol'],
-        metadata['amount_usd'],
-        metadata['from_address'][:8],
-        metadata['to_address'][:8],
-        metadata['nft_link']
-    )
-    print(tweet_text)
-    # Prepare the payload for the tweet
-    #time.sleep(3)
-    if media_id != None:
-        payload = {"text": tweet_text, "media": {"media_ids": media_id}}
-    else:
-        payload = {"text": tweet_text}
-    #Post the tweet
-    print("TWEETING!")
-    response = post_tweet(payload, data).json()
-    Logger(f"response from tweeting {response}").error()
-    Logger(f"response from tweeting full ::: {response}").error()
-    #print(response)
-    return response
+# @app.route('/simulateSoldEvent', methods=['GET'])
+# def simulateEvent():
+#     payload = rGet("saved_nerd_item_sold")
+#     logging.info(f"Event Handled ::::{payload}")
+#     app.logger.info(f"Event Handled ::::{payload}")
+#     print(f"Event Handled ::::{payload}")
+#     # Fetch the access token from Redis
+#     #reauth()
+#     data = loadToken()
+#     # Extract the image URL and price from the payload
+#     metadata = extract_sold_item_info(payload)
+#     image_url = metadata['image_url']
+#     media_id = None
+#     if image_url != None:
+#         media_id=download_upload_media(image_url)
+#     # price = payload['payload']['base_price']
+#     tweet_text = "{} bought for {} {} (${} USD) by {} from {} {}".format(
+#         metadata['nft_name'],
+#         metadata['amount_token'],
+#         metadata['amount_symbol'],
+#         metadata['amount_usd'],
+#         metadata['from_address'][:8],
+#         metadata['to_address'][:8],
+#         metadata['nft_link']
+#     )
+#     print(tweet_text)
+#     # Prepare the payload for the tweet
+#     #time.sleep(3)
+#     if media_id != None:
+#         payload = {"text": tweet_text, "media": {"media_ids": media_id}}
+#     else:
+#         payload = {"text": tweet_text}
+#     #Post the tweet
+#     print("TWEETING!")
+#     response = post_tweet(payload, data).json()
+#     Logger(f"response from tweeting {response}").error()
+#     Logger(f"response from tweeting full ::: {response}").error()
+#     #print(response)
+#     return response
 
 @app.route("/eventSoldHandler", methods=["POST"])
 @auth.login_required
@@ -378,10 +378,35 @@ def event_sold_handler():
     #print(response)
     return response
 
-def post_tweet(payload, aToken):
-    print("Tweeting!")
+# def post_tweet(payload, aToken):
+#     print("Tweeting!")
     
-    return requests.request(
+#     return requests.request(
+#         "POST",
+#         "https://api.twitter.com/2/tweets",
+#         json=payload,
+#         headers={
+#             "Authorization": "Bearer {}".format(aToken["access_token"]),
+#             "Content-Type": "application/json",
+#         },
+#     )
+
+def post_tweet(payload, aToken):
+    now = datetime.now()
+    # Check if the 'last_tweet_time' is stored in the Redis database
+    if r.exists('last_tweet_time'):
+        # If it is, get the last tweet time
+        last_tweet_time = datetime.fromtimestamp(float(r.get('last_tweet_time')))
+        # If less than 1 minute have passed since the last tweet, return without sending the tweet
+        if (now - last_tweet_time).total_seconds() < 60:
+            print("Only 1 minute has passed since the last tweet.")
+            app.logger.info("Only 1 minute has passed since the last tweet")
+            Logger("Only 1 minute has passed since the last tweet").error()
+            logging.error("Only 1 min passed")
+            return
+    # Send the tweet
+    print("Tweeting!")
+    response = requests.request(
         "POST",
         "https://api.twitter.com/2/tweets",
         json=payload,
@@ -390,6 +415,11 @@ def post_tweet(payload, aToken):
             "Content-Type": "application/json",
         },
     )
+    # If the request was successful, update the 'last_tweet_time' in the Redis database
+    if response.status_code == 200:
+        r.set('last_tweet_time', now.timestamp())
+
+    return response
 
 #@app.route("/testrefresh", methods=["GET"])
 def refresh_token():
