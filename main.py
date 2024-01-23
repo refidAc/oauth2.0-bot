@@ -520,7 +520,7 @@ def callback():
     doggie_fact = parse_dog_fact()
     #payload = {"text": "{}".format(doggie_fact)}
     #response = post_tweet(payload, token).json()
-    response = json.dumps({"I'm","authed"})
+    response = {"I'm","authed"}
     return response
 
 #@app.route("/oauth/callback", methods=["GET"])
