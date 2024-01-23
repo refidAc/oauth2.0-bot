@@ -158,7 +158,7 @@ c_password = os.environ.get("C_PASSWORD")
 users = {
     f'{c_username}': generate_password_hash(f'{c_password}')
 }
-basic_auth = HTTPBasicAuth()
+basic_auth = HTTPBasicAuth(client_id, client_secret)
 
 def extract_sold_item_info(payload:dict):
     
@@ -564,7 +564,6 @@ def reauth():
     token = twitter.fetch_token(
         token_url=token_url,
         authorization_response=r.get("Auth_Url"),
-        auth=auth,
         client_id=client_id,
         include_client_id=True,
         code_verifier=code_verifier,
