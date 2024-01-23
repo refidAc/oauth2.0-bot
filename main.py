@@ -502,10 +502,11 @@ def reauth():
     #     code_verifier=code_verifier,
     #     code=code,
     # )
+    auth = HTTPBasicAuth(client_id, client_secret)
     token = twitter.fetch_token(
         token_url=token_url,
         authorization_response=r.get("Auth_Url"),
-        auth=False,
+        auth=auth,
         client_id=client_id,
         include_client_id=True,
         code_verifier=code_verifier,
