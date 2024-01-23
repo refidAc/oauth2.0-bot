@@ -20,7 +20,7 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import io
 from PIL import Image
-
+import cairosvg
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
 global r
@@ -225,11 +225,30 @@ def convert_to_jpg(image):
 def download_upload_media(url):
     #download
     #reformat width
-    url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
-    image = download_image(url)
-    jpg_image = convert_to_jpg(image)
-    filename='temp.jpg'
-    jpg_image.save(filename)
+    #url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
+# Parse the URL
+    parsed_url = urlparse(url)
+    # Get the file extension
+    file_extension = os.path.splitext(parsed_url.path)[1]
+    # Check if the file extension is .svg
+    print(f'file extension:::::::{file_extension}')
+    filename=''
+    if file_extension == ".svg":
+        # Download the SVG file
+        response = requests.get(parsed_url.geturl())
+        # Convert SVG to PNG using cairosvg
+        png_data = cairosvg.svg2png(bytestring=response.content)
+        # Open the PNG image data with PIL
+        image = Image.open(io.BytesIO(png_data))
+        # Save the image in JPG format
+        image.save("temp.jpg")
+        filename='temp.jpg'
+    else:
+        print("File is not an SVG.")
+        image = download_image(url)
+        jpg_image = convert_to_jpg(image)
+        filename='temp.jpg'
+        jpg_image.save(filename)
     #upload
     tweepy_auth = tweepy.OAuth1UserHandler(
         "{}".format(os.environ.get("API_KEY")),
@@ -277,23 +296,24 @@ def event_sold_handler():
     image_url = metadata['image_url']
     media_id=download_upload_media(image_url)
     # price = payload['payload']['base_price']
-    tweet_text = "{} bought for {} {} by {} from {} {}".format(
+    tweet_text = "{} bought for {} {} (${} USD) by {} from {} {}".format(
         metadata['nft_name'],
         metadata['amount_token'],
         metadata['amount_symbol'],
-        metadata['from_address'],
-        metadata['to_address'],
-        metadata['encoded_nft_link']
+        metadata['amount_usd'],
+        metadata['from_address'][:8],
+        metadata['to_address'][:8],
+        metadata['nft_link']
     )
     print(tweet_text)
     # Prepare the payload for the tweet
     #time.sleep(3)
-    payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
+    payload = {"text": tweet_text, "media": {"media_ids": media_id}}
     #payload = {"text": tweet_text}
     #Post the tweet
     print("TWEETING!")
     response = post_tweet(payload, data).json()
-    Logger(f"response from tweeting {response.text}").error()
+    Logger(f"response from tweeting {response}").error()
     Logger(f"response from tweeting full ::: {response}").error()
     #print(response)
     return response
