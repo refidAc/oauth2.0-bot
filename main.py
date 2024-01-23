@@ -295,7 +295,7 @@ def retweet():
     response = post_tweet(payload, data).json()
     return response
 
-@app.route('/simulateSoldEvent', methods=['GET']
+@app.route('/simulateSoldEvent', methods=['GET'])
     payload = rGet("saved_any_sold")
     logging.info(f"Event Handled ::::{payload}")
     print(f"Event Handled ::::{payload}")
