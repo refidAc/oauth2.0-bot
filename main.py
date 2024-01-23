@@ -162,8 +162,22 @@ users = {
 }
 
 def extract_sold_item_info(payload:dict):
+    
     retDict = {}
     temp = payload['payload']
+    sale_price_str = temp['sale_price']
+    usd_price_str = temp['payment_token']['usd_price']
+
+    # Convert the sale price and USD price to float
+    sale_price = float(sale_price_str) / 1e18
+    usd_price = float(usd_price_str)
+
+    # Calculate the total sale price in USD
+    total_usd = sale_price * usd_price
+
+    # Format the total sale price with comma separation and two decimal places
+    formatted_usd = "{:,.2f}".format(total_usd)
+
     retDict['chain']=temp['chain']
     retDict['from_address']=temp['maker']['address']
     retDict['to_address']=temp['taker']['address']
@@ -171,9 +185,9 @@ def extract_sold_item_info(payload:dict):
     retDict['image_url']=temp['item']['metadata']['image_url']
     retDict['nft_name']=temp['item']['metadata']['name']
     retDict['nft_link']=temp['item']['permalink']
-    retDict['amount_symbol'] = payload['payload']['payment_token']['symbol']
-    retDict['amount_token'] = int(payload['payload']['sale_price']) / (10 ** int(payload['payload']['payment_token']['decimals']))
-    retDict['amount_usd'] = float(payload['payload']['sale_price']) * float(payload['payload']['payment_token']['usd_price'])
+    retDict['amount_symbol'] = temp['payment_token']['symbol']
+    retDict['amount_token'] = int(temp['sale_price']) / (10 ** int(temp['payment_token']['decimals']))
+    retDict['amount_usd'] = formatted_usd
     retDict['encoded_nft_link'] = base64.urlsafe_b64encode(retDict['nft_link'].encode()).decode()
     return retDict
 
