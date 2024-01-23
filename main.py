@@ -300,6 +300,7 @@ def retweet():
 def simulateEvent():
     payload = rGet("saved_any_sold")
     logging.info(f"Event Handled ::::{payload}")
+    app.logger.info(f"Event Handled ::::{payload}")
     print(f"Event Handled ::::{payload}")
     # Fetch the access token from Redis
     #reauth()
@@ -341,6 +342,7 @@ def event_sold_handler():
     
     payload = request.get_json()
     logging.info(f"Event Handled ::::{payload}")
+    app.logger.info(f"Event Handled ::::{payload}")
     print(f"Event Handled ::::{payload}")
     # Fetch the access token from Redis
     #reauth()
@@ -496,6 +498,7 @@ def callback():
 
 @app.route("/test/reauth", methods=["GET"])
 def reauth():
+    app.logger.info("in reauth!")
     #code = request.args.get("code")
     code=r.get('req_code')
     # token = twitter.fetch_token(
