@@ -8,7 +8,7 @@ import redis
 from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 import logging
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 from opensea_sdk import *
 from multiprocessing import Process
 import time
@@ -18,6 +18,8 @@ from vrtools.vrutil import *
 from requests.auth import HTTPBasicAuth
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
+import io
+from PIL import Image
 
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
@@ -209,15 +211,25 @@ def wakeup():
     print('im awake!')
     return json.dumps({"i'm": "awake"})
 
+
+def download_image(url):
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+    image = Image.open(io.BytesIO(response.content))
+    return image
+
+def convert_to_jpg(image):
+    converted_image = image.convert('RGB')
+    return converted_image
+
 def download_upload_media(url):
     #download
     #reformat width
-    #url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
-    url = url_change_width(url,150)
-    resp = requests.get(url)
-    image_data = resp.content
-    with open("nft.jpg", "wb") as handler:
-        handler.write(image_data)
+    url = 'https://i.seadn.io/gcs/files/e3a2744c538cb97625d93967425b24d4.png?w=500&auto=format'
+    image = download_image(url)
+    jpg_image = convert_to_jpg(image)
+    filename='temp.jpg'
+    jpg_image.save(filename)
     #upload
     tweepy_auth = tweepy.OAuth1UserHandler(
         "{}".format(os.environ.get("API_KEY")),
@@ -226,11 +238,11 @@ def download_upload_media(url):
         "{}".format(os.environ.get("ACCESS_TOKEN_SECRET")),
     )
     tweepy_api = tweepy.API(tweepy_auth)
-    post = tweepy_api.simple_upload("nft.jpg")
+    post = tweepy_api.simple_upload(filename)
     text = str(post)
     media_id = re.search("media_id=(.+?),", text).group(1)
     payload = {"media": {"media_ids": ["{}".format(media_id)]}}
-    os.remove("nft.jpg")
+    #os.remove(filename)
     return payload['media']['media_ids']
 
 def make_token():
@@ -252,9 +264,10 @@ def retweet():
 
 @app.route("/eventSoldHandler", methods=["POST"])
 @auth.login_required
-def event_sold_handler(payload):
+def event_sold_handler():
+    
+    payload = request.get_json()
     logging.info(f"Event Handled ::::{payload}")
-    payload = json.loads(r.get("single_message_test"))
     print(f"Event Handled ::::{payload}")
     # Fetch the access token from Redis
     data = loadToken()
@@ -263,7 +276,6 @@ def event_sold_handler(payload):
     image_url = metadata['image_url']
     media_id=download_upload_media(image_url)
     # price = payload['payload']['base_price']
-    price = convert_to_ether(price)
     tweet_text = f"{0} bought for {1} {2} by {3} from {4} {5}".format(
         metadata['nft_name'],
         metadata['amount_token'],
