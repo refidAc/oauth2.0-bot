@@ -159,6 +159,22 @@ users = {
     f'{c_username}': generate_password_hash(f'{c_password}')
 }
 
+def extract_sold_item_info(payload:dict):
+    retDict = {}
+    temp = payload['payload']
+    retDict['chain']=temp['chain']
+    retDict['from_address']=temp['maker']['address']
+    retDict['to_address']=temp['taker']['address']
+    #payload.item.metadata.image_url
+    retDict['image_url']=temp['item']['metadata']['image_url']
+    retDict['nft_name']=temp['item']['metadata']['name']
+    retDict['nft_link']=temp['item']['permalink']
+    retDict['amount_symbol'] = payload['payload']['payment_token']['symbol']
+    retDict['amount_token'] = int(payload['payload']['sale_price']) / (10 ** int(payload['payload']['payment_token']['decimals']))
+    retDict['amount_usd'] = float(payload['payload']['sale_price']) * float(payload['payload']['payment_token']['usd_price'])
+    retDict['encoded_nft_link'] = base64.urlsafe_b64encode(retDict['nft_link'].encode()).decode()
+    return retDict
+
 def loadToken():
     t = r.get("token")
     bb_t = t.decode("utf8").replace("'", '"')
@@ -193,7 +209,6 @@ def wakeup():
     print('im awake!')
     return json.dumps({"i'm": "awake"})
 
-@app.route('/dlupmedia', methods=['GET'])
 def download_upload_media(url):
     #download
     #reformat width
@@ -235,7 +250,7 @@ def retweet():
     return response
 
 
-@app.route("/eventSoldHandler", methods=["GET"])
+@app.route("/eventSoldHandler", methods=["POST"])
 @auth.login_required
 def event_sold_handler(payload):
     logging.info(f"Event Handled ::::{payload}")
@@ -244,11 +259,19 @@ def event_sold_handler(payload):
     # Fetch the access token from Redis
     data = loadToken()
     # Extract the image URL and price from the payload
-    image_url = payload['payload']['item']['metadata']['image_url']
+    metadata = extract_sold_item_info(payload)
+    image_url = metadata['image_url']
     media_id=download_upload_media(image_url)
-    price = payload['payload']['base_price']
+    # price = payload['payload']['base_price']
     price = convert_to_ether(price)
-    tweet_text = f"Test! with image! Price: {price} WETH"
+    tweet_text = f"{0} bought for {1} {2} by {3} from {4} {5}".format(
+        metadata['nft_name'],
+        metadata['amount_token'],
+        metadata['amount_symbol'],
+        metadata['from_address'],
+        metadata['to_address'],
+        metadata['encoded_nft_link']
+    )
     # Prepare the payload for the tweet
     #time.sleep(3)
     payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}

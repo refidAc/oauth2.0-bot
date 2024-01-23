@@ -32,8 +32,10 @@ for key in keys:
     print(value_str)
     all_values[key] = value
 
+r.delete("ran_echo_once")
+r.delete("ran_post_once")
 # Print all values
-print(json.dumps(all_values, indent=4))
+#print(json.dumps(all_values, indent=4))
 # testpayload={
 #     "event_type": "item_received_bid",
 #     "payload": {
