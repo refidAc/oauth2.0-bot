@@ -416,8 +416,7 @@ def post_tweet(payload, aToken):
         },
     )
     # If the request was successful, update the 'last_tweet_time' in the Redis database
-    if response.status_code == 200:
-        r.set('last_tweet_time', now.timestamp())
+    r.set('last_tweet_time', now.timestamp())
 
     return response
 
