@@ -9,7 +9,6 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 import logging
 from urllib.parse import urlencode, urlsplit
-from opensea_sdk import * #stream_client
 from datetime import datetime
 from vrtools.vrutil import * #custom
 from requests.auth import HTTPBasicAuth
@@ -23,117 +22,6 @@ logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
 global r
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-
-
-# for key in r.scan_iter("prefix:*"):
-#     r.delete(key)
-# j_token_str = r.get("save_token")
-# print(f"stred tok :: {str(j_token_str)}")
-# j_token = json.loads(j_token_str.decode('utf-8'))
-# print(j_token)
-
-
-#####OPENSEA CONFIG############
-# def run_opensea_stream_client():
-    
-#     logging.basicConfig(level=logging.INFO)
-#     logging.error("Starting opensea client loop...")
-#     print("inside run opensea stream")
-#     opensea_api_key=os.environ.get("OPENSEA_KEY")
-#     collection_slug=['nuclear-nerds-of-the-accidental-apocalypse','pudgypenguins','cryptopunks','coqvshunter']
-#     print('attempting to connect to redis')
-#     r = redis.from_url(os.environ["REDIS_URL_DOGS"])
-#     print('connected to redis')
-#     global count
-#     count = 0
-#     def handle_item_sold(payload: dict):
-#         logging.info(f"Event Handled ::::{payload}")
-#         payload = json.loads(r.get("single_message_test"))
-#         print(f"Event Handled ::::{payload}")
-#         # Fetch the access token from Redis
-#         t = r.get("token")
-#         bb_t = t.decode("utf8").replace("'", '"')
-#         data = json.loads(bb_t)
-#         # Extract the image URL and price from the payload
-#         image_url = payload['payload']['item']['metadata']['image_url']
-#         price = payload['payload']['base_price']
-#         price = convert_to_ether(price)
-#         r.set("app_verify","true")
-            
-#     def handle_events(payload: dict):
-#         logging.error(f"Event Handled ::::{payload}")
-#         # Get current date
-#         # payload.collection.slug
-#         slug=payload['payload']['collection']['slug']
-#         # print("====================================================")
-#         # print(slug)
-#         # print("====================================================")
-#         # print(payload)
-#         event_type=payload['event_type']
-#         key=slug+"_"+event_type
-#         collect_statistics(key)
-#         print(f'slug_event:: {key}',flush=True)
-#         logging.error('slug_event:: {key}')
-#         if key == 'nuclear-nerds-of-the-accidental-apocalypse_item_sold':
-#             resp = event_sold_handler(payload)
-#             logging.error(f'finished handling sold event for :: {payload}')
-#         if slug == 'nuclear-nerds-of-the-accidental-apocalypse':
-#             rSet('saved_nerd_sold', payload)
-#         if event_type == 'item_sold':
-#             rSet('saved_any_sold', payload)
-        
-#     def event_sold_handler(payload:dict):
-#         logging.info(f"Event Handled ::::{payload}")
-#         payload = json.loads(r.get("single_message_test"))
-#         print(f"Event Handled ::::{payload}")
-#         # Fetch the access token from Redis
-#         data = loadToken()
-#         # Extract the image URL and price from the payload
-#         image_url = payload['payload']['item']['metadata']['image_url']
-#         media_id=download_upload_media(image_url)
-#         price = payload['payload']['base_price']
-#         price = convert_to_ether(price)
-#         tweet_text = f"Test! with image! Price: {price} WETH"
-#         # Prepare the payload for the tweet
-#         #time.sleep(3)
-#         payload = {"text": tweet_text, "attachments": {"media_keys": [media_id]}}
-#         #payload = {"text": tweet_text}
-#         #Post the tweet
-#         print("TWEETING!")
-#         response = post_tweet(payload, data).json()
-#         #print(response)
-#         return response
-    
-#     def collect_statistics(slug_event_type:str):
-#         print('entered collect stats')
-#         now = datetime.now()
-#         # Create keys for today and this month
-#         today = f"{slug_event_type}_{now.year}-{now.month}-{now.day}"
-#         this_month = f"{slug_event_type}_{now.year}-{now.month}"
-#         # Increment counters
-#         r.incr(today)
-#         r.incr(this_month)
-
-#     print("Started opensea")
-#     Client = OpenseaStreamClient(opensea_api_key, Network.MAINNET)
-#     Client.onEvents(
-#         collection_slug,
-#         [EventTypes.ITEM_RECEIVED_OFFER, EventTypes.ITEM_RECEIVED_BID, EventTypes.ITEM_SOLD],
-#         handle_events
-#         )
-#     Client.startListening()
-    
-#        [EventTypes.ITEM_RECEIVED_OFFER, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_CANCELLED, EventTypes.ITEM_LISTED, EventTypes.ITEM_METADATA_UPDATED, EventTypes.ITEM_RECEIVED_BID, EventTypes.ITEM_TRANSFERRED, EventTypes.ITEM_SOLD],
-
-#########################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################
-
 
 app = Flask(__name__)
 #auth = HTTPBasicAuth()
@@ -305,7 +193,7 @@ def event_sold_handler():
     app.logger.info(f"Event Handled ::::{payload}")
     print(f"Event Handled ::::{payload}")
     # Fetch the access token from Redis
-    #reauth()
+    reauth()
     data = loadToken()
     # Extract the image URL and price from the payload
     metadata = extract_sold_item_info(payload)
@@ -332,10 +220,9 @@ def event_sold_handler():
         payload = {"text": tweet_text}
     #Post the tweet
     print("TWEETING!")
-    reauth()
     response = post_tweet(payload, data).json()
-    Logger(f"response from tweeting {response}").error()
-    Logger(f"response from tweeting full ::: {response}").error()
+    print(f"response from tweeting {response}").error()
+    print(f"response from tweeting full ::: {response}").error()
     #print(response)
     return response
 
@@ -349,7 +236,6 @@ def post_tweet(payload, aToken):
         if (now - last_tweet_time).total_seconds() < 60:
             print("Only 1 minute has passed since the last tweet.")
             app.logger.info("Only 1 minute has passed since the last tweet")
-            Logger("Only 1 minute has passed since the last tweet").error()
             logging.error("Only 1 min passed")
             return
     # Send the tweet
