@@ -9,20 +9,22 @@ from requests_oauthlib import OAuth2Session
 from flask import Flask, redirect, session, request
 import logging
 from urllib.parse import urlencode, urlsplit
-from opensea_sdk import *
-import tweepy
+from opensea_sdk import * #stream_client
 from datetime import datetime
-from vrtools.vrutil import *
+from vrtools.vrutil import * #custom
 from requests.auth import HTTPBasicAuth
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
-import io
-from PIL import Image
-import cairosvg
+import tweepy #image upload oauth1.1 api
+import io #image download stuff
+from PIL import Image #image download stuff
+import cairosvg #image download stuff
 logging.basicConfig(level=logging.INFO)
 logging.info("Starting Bot...")
 global r
 r = redis.from_url(os.environ["REDIS_URL_DOGS"])
+
+
 # for key in r.scan_iter("prefix:*"):
 #     r.delete(key)
 # j_token_str = r.get("save_token")
@@ -294,46 +296,6 @@ def retweet():
     response = post_tweet(payload, data).json()
     return response
 
-# @app.route('/simulateSoldEvent', methods=['GET'])
-# def simulateEvent():
-#     payload = rGet("saved_nerd_item_sold")
-#     logging.info(f"Event Handled ::::{payload}")
-#     app.logger.info(f"Event Handled ::::{payload}")
-#     print(f"Event Handled ::::{payload}")
-#     # Fetch the access token from Redis
-#     #reauth()
-#     data = loadToken()
-#     # Extract the image URL and price from the payload
-#     metadata = extract_sold_item_info(payload)
-#     image_url = metadata['image_url']
-#     media_id = None
-#     if image_url != None:
-#         media_id=download_upload_media(image_url)
-#     # price = payload['payload']['base_price']
-#     tweet_text = "{} bought for {} {} (${} USD) by {} from {} {}".format(
-#         metadata['nft_name'],
-#         metadata['amount_token'],
-#         metadata['amount_symbol'],
-#         metadata['amount_usd'],
-#         metadata['from_address'][:8],
-#         metadata['to_address'][:8],
-#         metadata['nft_link']
-#     )
-#     print(tweet_text)
-#     # Prepare the payload for the tweet
-#     #time.sleep(3)
-#     if media_id != None:
-#         payload = {"text": tweet_text, "media": {"media_ids": media_id}}
-#     else:
-#         payload = {"text": tweet_text}
-#     #Post the tweet
-#     print("TWEETING!")
-#     response = post_tweet(payload, data).json()
-#     Logger(f"response from tweeting {response}").error()
-#     Logger(f"response from tweeting full ::: {response}").error()
-#     #print(response)
-#     return response
-
 @app.route("/eventSoldHandler", methods=["POST"])
 @basic_auth.login_required
 def event_sold_handler():
@@ -370,24 +332,12 @@ def event_sold_handler():
         payload = {"text": tweet_text}
     #Post the tweet
     print("TWEETING!")
+    reauth()
     response = post_tweet(payload, data).json()
     Logger(f"response from tweeting {response}").error()
     Logger(f"response from tweeting full ::: {response}").error()
     #print(response)
     return response
-
-# def post_tweet(payload, aToken):
-#     print("Tweeting!")
-    
-#     return requests.request(
-#         "POST",
-#         "https://api.twitter.com/2/tweets",
-#         json=payload,
-#         headers={
-#             "Authorization": "Bearer {}".format(aToken["access_token"]),
-#             "Content-Type": "application/json",
-#         },
-#     )
 
 def post_tweet(payload, aToken):
     now = datetime.now()
@@ -418,83 +368,6 @@ def post_tweet(payload, aToken):
 
     return response
 
-@app.route("/testrefresh", methods=["GET"])
-def refresh_token():
-    print("Refreshing!")
-    # t = r.get("token")
-    # bb_t = t.decode("utf8").replace("'", '"')
-    # data = json.loads(bb_t)
-    data=loadToken()
-    # # Prepare the refresh token request parameters
-    # params = {
-    #     'grant_type': 'refresh_token',
-    #     'refresh_token': data["refresh_token"],
-    #     'client_id': client_id,
-    #     'client_secret': client_secret,
-    # }
-    # headers = {
-    #     'Authorization': 'Bearer {}'.format(data['access_token']),
-    #     'Content-Type': 'application/json',
-    # }
-    # Encode the client id and secret
-    credentials = f"{client_id}:{client_secret}"
-    logging.info(f"credentials :: {credentials}")
-    encoded_credentials = base64.urlsafe_b64encode(credentials.encode()).decode()
-    logging.info(f"encoded creds : {encoded_credentials}")
-    # Define the headers
-    print(f"data_token:::: {data}")
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        "Authorization": "Bearer {}".format(data["access_token"]),
-    }
-    logging.info(f"req headers: {headers}")
-    # Define the parameters
-    params = {
-        'grant_type': 'refresh_token',
-        'refresh_token': f'{data["refresh_token"]}'
-    }
-    #params = 'grant_type=refresh_token&refresh_token=' + f'{data["refresh_token"]}'
-    params = urlencode(params)
-    # Convert the parameters to a JSON string
-    
-    logging.info(f"req params: {params}")
-
-    # Send the POST request
-    response = requests.post('https://api.twitter.com/2/oauth2/token', headers=headers, data=params)
-
-    # Parse the response
-    #refreshed_token = response.json()
-    # Send the refresh token request
-    response = requests.post(token_url, params=params, headers=headers)
-    print("Status code: ", response.status_code)
-    print("Headers: ", response.headers)
-    print("Body: ", response.text)
-    logging.info(response.status_code)
-    logging.info(response.headers)
-    logging.info(response.text)
-
-
-    # Check if the response is not empty and is in JSON format
-    if response.status_code == 200:
-        try:
-            refreshed_token = response.json()
-        except ValueError:
-            print("Invalid JSON received: ", response.text)
-            return {"Error": response.text}
-    else:
-        print("Unexpected response from server: ", response.text)
-        return {"Error": response.text}
-    #refreshed_token = response.json()
-    print("we refreshed something!")
-    if(refreshed_token['error'] or refreshed_token['error']!=None):
-        return json.dumps({"Error occured": str(refreshed_token)})
-    else:
-        st_refreshed_token = '"{}"'.format(refreshed_token)
-        j_refreshed_token = json.loads(st_refreshed_token)
-        r.set("token", j_refreshed_token)
-        return json.dumps({"PreviousToken":str(t),"Token Refreshed?":str(j_refreshed_token)})
-
-
 @app.route("/")
 def demo():
     global twitter
@@ -519,50 +392,13 @@ def callback():
     raw_token = token
     rSet("raw_token",raw_token)
     saveToken(token)
-    # doggie_fact = parse_dog_fact()
-    # payload = {"text": "{}".format(doggie_fact)}
     response = {"Success": "Authed!"}
     return json.dumps(response)
 
-#@app.route("/oauth/callback", methods=["GET"])
-# def callback():
-#     code = request.args.get("code")
-#     token = twitter.fetch_token(
-#         token_url=token_url,
-#         client_secret=client_secret,
-#         code_verifier=code_verifier,
-#         code=code,
-#     )
-#     user_me = requests.request(
-#         "GET",
-#         "https://api.twitter.com/2/users/me",
-#         headers={"Authorization": "Bearer {}".format(token["access_token"])},
-#     ).json()
-#     print(user_me)
-#     user_id = user_me["data"]["id"]
-#     tokens = {"new_token": token}
-#     t = tokens["new_token"]
-#     refreshed_token = twitter.refresh_token(
-#           client_id=client_id,
-#           client_secret=client_secret,
-#           token_url=token_url,
-#           refresh_token=t["refresh_token"],
-#         )
-#     tokens.update({"new_token": refreshed_token})
-#     return "You should now have a refreshed token"
 
-@app.route("/test/reauth", methods=["GET"])
+@app.route("/reauth", methods=["GET"])
 def reauth():
-    app.logger.info("in reauth!")
-    #code = request.args.get("code")
-    code=r.get('req_code')
-    # token = twitter.fetch_token(
-    #     token_url=token_url,
-    #     client_secret=client_secret,
-    #     code_verifier=code_verifier,
-    #     code=code,
-    # )
-    
+    app.logger.info("in reauth!")    
     token = twitter.refresh_token(
         token_url=token_url,
         client_id=client_id,
@@ -574,10 +410,6 @@ def reauth():
     rSet("raw_token",raw_t)
     saveToken(token)
     return json.dumps({'I':'Reauthed'})
-
-# def run_flask_server():
-#     #refresh_token()
-#     app.run()
 
 if __name__ == '__main__':
     # p1 = Process(target=run_opensea_stream_client)
