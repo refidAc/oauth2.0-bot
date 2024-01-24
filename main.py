@@ -445,7 +445,7 @@ def refresh_token():
     print(f"data_token:::: {data}")
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': f'Basic {encoded_credentials}',
+        "Authorization": "Bearer {}".format(data["access_token"]),
     }
     logging.info(f"req headers: {headers}")
     # Define the parameters
