@@ -76,7 +76,7 @@ keys = r.keys()
 #     print(value_str)
 #     all_values[key] = value
 print(json.dumps(totalCountSoldEvents(keys)))
-#print((r.get("token")))
+print((r.get("token")))
 r.delete("ran_echo_once")
 r.delete("ran_post_once")
 r.delete("ran_post_once_local")

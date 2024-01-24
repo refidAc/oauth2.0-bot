@@ -285,12 +285,14 @@ def callback():
 @app.route("/reauth", methods=["GET"])
 def reauth():
     app.logger.info("in reauth!")    
+    token=loadToken()
     token = twitter.refresh_token(
         token_url=token_url,
         client_id=client_id,
         client_secret=client_secret,
         include_client_id=True,
         code_verifier=code_verifier,
+        refresh_token=token['refresh_token']
     )
     raw_t = token
     rSet("raw_token",raw_t)
