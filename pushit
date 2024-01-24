@@ -1,4 +1,14 @@
+#!/bin/bash
+
+# Default commit message
+commit_message='1'
+
+# Check if a string argument is provided
+if [ "$#" -eq 1 ]; then
+    commit_message="$1"
+fi
+
 pip3 freeze > requirements.txt
 git add .
-git commit -m '1'
+git commit -m "$commit_message"
 git push origin
