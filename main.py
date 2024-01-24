@@ -221,8 +221,8 @@ def event_sold_handler():
     #Post the tweet
     print("TWEETING!")
     response = post_tweet(payload, data).json()
-    print(f"response from tweeting {response}").error()
-    print(f"response from tweeting full ::: {response}").error()
+    print(f"response from tweeting {response}")
+    print(f"response from tweeting full ::: {response}")
     #print(response)
     return response
 
