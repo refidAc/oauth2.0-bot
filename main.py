@@ -442,10 +442,10 @@ def refresh_token():
     encoded_credentials = base64.urlsafe_b64encode(credentials.encode()).decode()
     logging.info(f"encoded creds : {encoded_credentials}")
     # Define the headers
+    print(f"data_token:::: {data}")
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': f'Basic {encoded_credentials}',
-        'grant_type': 'refresh_token'
     }
     logging.info(f"req headers: {headers}")
     # Define the parameters
