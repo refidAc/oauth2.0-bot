@@ -421,10 +421,10 @@ def post_tweet(payload, aToken):
 @app.route("/testrefresh", methods=["GET"])
 def refresh_token():
     print("Refreshing!")
-    t = r.get("token")
-    bb_t = t.decode("utf8").replace("'", '"')
-    data = json.loads(bb_t)
-    data=rGet("token")
+    # t = r.get("token")
+    # bb_t = t.decode("utf8").replace("'", '"')
+    # data = json.loads(bb_t)
+    data=loadToken()
     # # Prepare the refresh token request parameters
     # params = {
     #     'grant_type': 'refresh_token',

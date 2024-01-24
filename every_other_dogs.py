@@ -60,22 +60,23 @@ r = redis.from_url(os.environ["REDIS_URL_DOGS"])
 # Get all keys
 keys = r.keys()
 
-# Initialize an empty dictionary to hold the values
-all_values = {}
-print(keys)
-# Iterate over all keys
-total = 0
-for key in keys:
+# # Initialize an empty dictionary to hold the values
+# all_values = {}
+# print(keys)
+# # Iterate over all keys
+# total = 0
+# for key in keys:
     
-    key=key.decode('utf-8')
+#     key=key.decode('utf-8')
     
-    print((key))
-    # Get the value associated with the key
-    value = r.get(str(key))
-    value_str = value.decode('utf-8')
-    print(value_str)
-    all_values[key] = value
-print(json.dumps(totalCountSoldEvents(keys)))
+#     print((key))
+#     # Get the value associated with the key
+#     value = r.get(str(key))
+#     value_str = value.decode('utf-8')
+#     print(value_str)
+#     all_values[key] = value
+# print(json.dumps(totalCountSoldEvents(keys)))
+print((r.get("token")))
 r.delete("ran_echo_once")
 r.delete("ran_post_once")
 r.delete("ran_post_once_local")
