@@ -563,10 +563,10 @@ def reauth():
     #     code=code,
     # )
     
-    token = twitter.fetch_token(
+    token = twitter.refresh_token(
         token_url=token_url,
-        authorization_response=r.get("Auth_Url"),
         client_id=client_id,
+        client_secret=client_secret,
         include_client_id=True,
         code_verifier=code_verifier,
     )
